@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
+from website.views import homePage
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^home/$', homePage,name='homePage'),
+    url(r'^$', homePage,name='homePage'),
 ]

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Paper Summary Log In</title>
+    <link rel="stylesheet" href="{% static 'css/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="{% static 'js/vue1.js' %}"></script>
+    <script src="{% static 'js/reqwest.js' %}"></script>
+
+  </head>
+<!-- tags for Django avoiding to take '{}' as variable-->
+{% verbatim %}
+<body  id="app">
+  <div class="ui basic center aligned segment" style="background-color: #A9D0F5;opacity:0.9;">
+    <h1 style="color:White;">Paper Summary</h1>
+  </div>
+  <div class="ui very padded segment block-1">
+    <form class="ui form" action="index.html" method="post">
+      <div class="field">
+        <label>Name</label>
+        <input type="text" name="first-name" placeholder="Name">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="text" name="first-name" placeholder="Password">
+      </div>
+      <div class="ui right aligned basic segment">
+        <button class="ui blue button" type="submit">LOGIN</button>
+      </div>
+
+    </form>
+  </div>
+  <script>
+
+  </script>
+</body>
+
+
+{% endverbatim %}
+</html>
