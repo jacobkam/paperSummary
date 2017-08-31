@@ -17,23 +17,77 @@
     <h1 style="color:White;">Paper Summary</h1>
   </div>
   <div class="ui very padded segment block-1">
-    <form class="ui form" action="index.html" method="post">
+    <form class="ui form" method="post">
       <div class="field">
         <label>Name</label>
-        <input type="text" name="first-name" placeholder="Name">
+        <input type="text" name="name" placeholder="Name">
       </div>
       <div class="field">
         <label>Password</label>
-        <input type="text" name="first-name" placeholder="Password">
+        <input type="text" name="passwd" placeholder="Password">
       </div>
       <div class="ui right aligned basic segment">
-        <button class="ui blue button" type="submit">LOGIN</button>
+        <button class="ui blue button"  v-on:click="login" type="submit">LOGIN</button>
       </div>
 
     </form>
+  
+  </div>
+  <div class='ui basic center aligned block-1 segment'>
+   © 2017   JingxinFu.<br>Contact: jacobxin24@gmail.com </br>
   </div>
   <script>
+  vm = new Vue({
+    el:"#app",
+      data:{
+      },
+      method:{
+        login : function (){
+          var self = this;
+          reqwest({
+            url : "http://127.0.0.1:8000/api/login/",
+            method : "post",
+            type : "json",
+            data : {
+              name : self.name,
+              passwd : self.passwd,
+            },
+            /*headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},*/
+            headers :{'X-CSRFToken': Cookies.get('csrftoken')},
+            success:function(resp){
+                  Cookies.set('token',resp.token);
+                  console.log('token is :',resp.token);
+                  self.msg = resp.msg;
+                  self.show = false;
+                  self.log = true;
+                  window.location = 'http://127.0.0.1:8000/m/userlistpanel/';
 
+
+            },
+            error:function(error){
+                  console.log('出现了错误',error);
+                  var error_resp = JSON.parse(error.response);
+                  if (error_resp.success==3){
+                    self.case = 3;
+                    self.show = true;
+                    self.error = 'error';
+                  }else if (error_resp.success == 4) {
+                    self.case = 4;
+                    self.show = true;
+                    self.error = 'error';
+                  }else if (error_resp.success == 2) {
+                    self.show = false;
+                  }
+                  self.msg = error_resp.msg;
+            },
+          });
+        },
+
+        logout : function () {
+          Cookies.remove('token');
+        },
+      },
+  })
   </script>
 </body>
 

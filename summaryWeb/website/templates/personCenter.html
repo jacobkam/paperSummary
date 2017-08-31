@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Paper Summary Log In</title>
+    <link rel="stylesheet" href="{% static 'css/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="{% static 'js/vue1.js' %}"></script>
+    <script src="{% static 'js/reqwest.js' %}"></script>
+
+  </head>
+<!-- tags for Django avoiding to take '{}' as variable-->
+{% verbatim %}
+<body  id="app">
+  <div class="ui basic center aligned segment" style="background-color: #A9D0F5;opacity:0.9;">
+    <h1 style="color:white;">Paper Summary</h1>
+    <div class="ui secondary pointing inverted large menu" >
+      <a class="active item">
+        Home
+      </a>
+      <a class="item">
+        Best Summary
+      </a>
+      <a class="item">
+        Peer Review 
+      </a>
+      <div class="right menu">
+        <a class="ui item">
+          Logout
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class='ui grid'>
+
+    <div class="four wide column">
+      <div class="ui left card" style="margin-left: 10px;">
+        <div class="image">
+          <img src="/static/img/geek.jpg">
+        </div>
+        <div class="content">
+          <a class="header">Elyse</a>
+        </div>
+      </div>
+    </div>
+
+<!-- favorite summary -->
+    <div class="six wide column">
+     <div class='ui center aligned segment' style="opacity: 0.9">
+
+        <div class="ui left aligned category search">
+          <div class="ui icon input">
+            <input class="prompt" type="text" v-model='bestArticle' placeholder="Search Your Favorite Summary title" style="width: 300px;">
+            <i class="search icon"></i>
+          </div>
+        </div>
+        <!-- items -->
+        <div v-for="artcs in favorite" class="ui vertical stripe segment">
+            <div class="ui text container">
+              <h3 class="ui header">{{ artcs.title }}</h3>
+              <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >
+              <p>{{ artcs.content|limitBy 100 }}<p>
+              <a class="ui large button">Read More</a>
+              <h4 class="ui horizontal header divider">
+              </h4>
+            </div>
+          </div>
+
+
+      </div>      
+    </div>
+
+<!-- personal summary -->
+    <div class="six wide column">
+      <div class='ui center aligned segment' style="opacity: 0.9;margin-right: 10px;">
+      <!-- searching -->
+        <div class="ui search">
+          <div class="ui icon input">
+            <input class="prompt" type="text" v-model='personalArticle' placeholder="Search Your Personal Summary title" style="width: 300px;">
+            <i class="search icon"></i>
+          </div>
+        </div>
+      <!-- items -->
+      <div v-for="artcs in personal" class="ui vertical stripe segment">
+        <div class="ui text container">
+          <h3 class="ui header">{{ artcs.title }}</h3>
+          <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >
+          <p>{{ artcs.content|limitBy 100 }}<p>
+          <a class="ui large button">Read More</a>
+          <h4 class="ui horizontal header divider">
+          </h4>
+        </div>
+      </div>
+
+      </div>
+    </div>
+
+  </div>
+  <div class='ui basic center aligned segment' style="margin-top: 200px;background-color:#A9D0F5;opacity:0.9;">
+   <p style="color:white;">© 2017   JingxinFu.<br>Contact: jacobxin24@gmail.com </br></p>
+  </div>
+
+  <script>
+  vm = new Vue({
+      el:"#app",
+      data:{
+        bestArticle:''
+        personalArticle:''
+      },
+      methods:{
+       getData:function(){
+          var self = this;
+          reqwest({
+            url:'http://127.0.0.1:8000/api/article/',
+            type:'json',
+            success:function(resp){
+              console.log(resp);
+              self.articles=resp;
+            },
+
+          })
+        },
+      },
+      computed:{
+        personal:function(){
+          var self=this;
+
+        }
+      },
+
+      ready:function(){
+        this.getData();
+      }
+    })
+
+
+  </script>
+</body>
+
+
+{% endverbatim %}
+</html>
