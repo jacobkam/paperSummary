@@ -1,12 +1,9 @@
-body{
-  background-image: url('../img/pic2.png');
-  background-repeat:round;
-}
+
 .block-1{
   box-sizing: border-box;
   width: 500px;
   font-size: 14px;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%,0);
   position: relative;
   left: 50%;
   top: 50%;

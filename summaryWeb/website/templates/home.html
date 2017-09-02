@@ -5,88 +5,149 @@
     <meta charset="utf-8">
     <title>Paper Summary Log In</title>
     <link rel="stylesheet" href="{% static 'css/semantic.css' %}">
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <script src="{% static 'js/vue1.js' %}"></script>
     <script src="{% static 'js/reqwest.js' %}"></script>
+    <script src="{% static 'js/js.cookie.js' %}"></script>
 
+  
+    <style media="screen">
+              body {
+                  background-image:url();
+              }
+              .ui.vertical.segment.masthead {
+                  height:200px;
+                  padding-top:80px;
+                  background-image: url({% static 'img/pic2.png' %});
+                  background-size: cover;
+              }
+              .ui.login.container {
+                  padding-top: 60px;
+                  width: 600px;
+              }
+    </style>
   </head>
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
 <body  id="app">
-  <div class="ui basic center aligned segment" style="background-color: #A9D0F5;opacity:0.9;">
-    <h1 style="color:White;">Paper Summary</h1>
+  <div  class="ui fixed inverted teal borderless menu" style="opacity: 0.8">
+      <div class="header item">
+          Paper Summary
+      </div>
   </div>
-  <div class="ui very padded segment block-1">
-    <form class="ui form" method="post">
-      <div class="field">
+
+  <div class="ui vertical center aligned inverted segment masthead">
+      <h1 class="ui  heasder">Welcome</h1>
+  </div>
+  
+  <div class="ui login container">
+    <form class="ui form" v-if="show==true">
+      <div class="ui {{ errorName }} field">
         <label>Name</label>
-        <input type="text" name="name" placeholder="Name">
+        <input type="text" v-model="username" placeholder="Name">
       </div>
-      <div class="field">
+
+      <div class="ui {{ errorPasswd }} field">
         <label>Password</label>
-        <input type="text" name="passwd" placeholder="Password">
-      </div>
-      <div class="ui right aligned basic segment">
-        <button class="ui blue button"  v-on:click="login" type="submit">LOGIN</button>
+        <input type="text" v-model="password" placeholder="Password">
       </div>
 
     </form>
-  
+    <div class="ui right aligned basic segment">
+      <button class="ui {{ ActiveOrDisabled }} button"  v-on:click="login" type="submit">LOGIN</button>
+    </div>
+
+    <div class="ui error message" v-show="error=='error' && case!=4">
+      <p>{{ msg }}</p>
+    </div>
+
+    <div class="ui error message" v-if="error=='error' && case==4">
+      <div class="header">Action Forbidden</div>
+      <p>USERNAME:{{ msg.username[0] }}</p>
+      <p>PASSWORD:{{ msg.password[0] }}</p>
+    </div>
+    
   </div>
-  <div class='ui basic center aligned block-1 segment'>
+
+  <div class='ui basic center aligned segment'>
    © 2017   JingxinFu.<br>Contact: jacobxin24@gmail.com </br>
   </div>
+
   <script>
   vm = new Vue({
     el:"#app",
-      data:{
+    data:{
+      error:'',
+      errorName:'',
+      errorPasswd:'',
+      case:'',
+      username:'',
+      password:'',
+      msg:'',
+      passwdShow:false,
+      show:true,
+    },
+    methods:{
+      login : function(){
+        var self = this;
+        reqwest({
+          url : "http://127.0.0.1:8000/api/login/",
+          method : "post",
+          type : "json",
+          data : {
+            username : self.username,
+            password : self.password,
+          },
+          //headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+          headers :{'X-CSRFToken': Cookies.get('csrftoken')},
+          success:function(resp){
+                Cookies.set('token',resp.token);
+                console.log('token is :',resp.token);
+                self.msg = resp.msg;
+                window.location = 'http://127.0.0.1:8000/article/';
+          },
+
+          error:function(error){
+                console.log('出现了错误',error);
+                var error_resp = JSON.parse(error.response);
+                self.error = 'error';
+                if (error_resp.success==2){
+                  self.errorPasswd='error';
+                  self.errorName=''
+                  self.case=2;
+                  self.show=true;
+                }else if (error_resp.success == 3) {
+                  self.errorName='error';
+                  self.errorPasswd='';
+                  self.show=true;
+                  self.case=3;
+                }else if (error_resp.success == 4) {
+                  self.errorName='error';
+                  self.errorPasswd='error';
+                  self.case=4;
+                  self.show=true;
+                }
+                console.log(self.case,self.error);
+                self.msg = error_resp.msg;
+                console.log(self.case);
+          },
+        });
       },
-      method:{
-        login : function (){
-          var self = this;
-          reqwest({
-            url : "http://127.0.0.1:8000/api/login/",
-            method : "post",
-            type : "json",
-            data : {
-              name : self.name,
-              passwd : self.passwd,
-            },
-            /*headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},*/
-            headers :{'X-CSRFToken': Cookies.get('csrftoken')},
-            success:function(resp){
-                  Cookies.set('token',resp.token);
-                  console.log('token is :',resp.token);
-                  self.msg = resp.msg;
-                  self.show = false;
-                  self.log = true;
-                  window.location = 'http://127.0.0.1:8000/m/userlistpanel/';
+
+      
+    },
+
+   computed :{
+          /*button active*/
+          ActiveOrDisabled : function () {
+            if (this.username.length > 0 && this.password.length > 0){
+              return 'blue active'
+            }else {
+              return 'disabled'
+            }
+          },
 
 
-            },
-            error:function(error){
-                  console.log('出现了错误',error);
-                  var error_resp = JSON.parse(error.response);
-                  if (error_resp.success==3){
-                    self.case = 3;
-                    self.show = true;
-                    self.error = 'error';
-                  }else if (error_resp.success == 4) {
-                    self.case = 4;
-                    self.show = true;
-                    self.error = 'error';
-                  }else if (error_resp.success == 2) {
-                    self.show = false;
-                  }
-                  self.msg = error_resp.msg;
-            },
-          });
         },
-
-        logout : function () {
-          Cookies.remove('token');
-        },
-      },
   })
   </script>
 </body>
