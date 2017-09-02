@@ -9,15 +9,6 @@
     <script src="{% static 'js/vue1.js' %}"></script>
     <script src="{% static 'js/reqwest.js' %}"></script>
     <script src="{% static 'js/js.cookie.js' %}"></script>
-
-    <style media="screen">
-      .ui.container.segment.inputs {
-          padding: 70px;
-          font-family: SimHei;
-          margin-top: 0px;
-        }
-
-    </style>
   </head>
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
@@ -45,15 +36,25 @@
     </div>
   </div>
 
-  <div class="ui container segment inputs">
-    <form class="ui form">
-      <input type="text" name="" value="" placeholder="Title" style="margin-bottom:10px;">
-      <input type="text" name="" value="" placeholder="Content" style="height:500px;">
-    </form>
-    <div class="ui right aligned basic segment">
-      <button class="ui {{ ActiveOrDisabled }} button"  v-on:click="login" type="submit">Submit</button>
+<!-- all summary -->
+  <div class='ui very padded segment' style="opacity: 0.9;">
+      <!-- items -->
+          <h3 class="ui center aligned header">{{ article.title }}</h3>
+          <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
+          <p>{{ article.content }}.<p>
+          <div class="ui secondary  menu">
+            <div class="right menu">
+              <a class="ui item">
+                <i class="like icon"></i> {{ article.vote }} Like
+              </a>
+              <a class="ui item">
+                <i class="comment icon"></i> 1 comment
+              </a>
+            </div>
+
+          </div>
     </div>
-  </div>
+
 
   <div class='ui basic center aligned segment' style="margin-top: 200px;background-color:#A9D0F5;opacity:0.9;">
    <p style="color:white;">© 2017   JingxinFu.<br>Contact: jacobxin24@gmail.com </br></p>

@@ -15,16 +15,21 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from website.views import homePage,articleReview
-from website.api import login,article
+from website.views import homePage,articleReview,articleList,detail,editing
+from website.api import login,article,allArticle,articleDetail
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^home/', homePage,name='home'),
     url(r'^$', homePage,name='home'),
     url(r'^article/$', articleReview,name='articleReview'),
+    url(r'^articleList/$', articleList,name='articleList'),
+    url(r'^detail/',detail,name='detail'),
+    url(r'^editing/',editing,name='editing'),
 
     ## api
     url(r'^api/login/', login),
     url(r'^api/article/', article),
+    url(r'^api/allArticle/', allArticle),
+    url(r'^api/detail/(?P<id>\d+)',articleDetail),# get detail
 ]

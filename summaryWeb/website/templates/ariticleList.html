@@ -9,15 +9,6 @@
     <script src="{% static 'js/vue1.js' %}"></script>
     <script src="{% static 'js/reqwest.js' %}"></script>
     <script src="{% static 'js/js.cookie.js' %}"></script>
-
-    <style media="screen">
-      .ui.container.segment.inputs {
-          padding: 70px;
-          font-family: SimHei;
-          margin-top: 0px;
-        }
-
-    </style>
   </head>
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
@@ -34,7 +25,7 @@
       <a class="item">
         Peer Review
       </a>
-      <a class="item">
+      <a class="item" v-on:click='writeSummary'>
          <i class='edit icon'> </i>Write Summary
       </a>
       <div class="right menu" v-on:click="logout">
@@ -45,15 +36,34 @@
     </div>
   </div>
 
-  <div class="ui container segment inputs">
-    <form class="ui form">
-      <input type="text" name="" value="" placeholder="Title" style="margin-bottom:10px;">
-      <input type="text" name="" value="" placeholder="Content" style="height:500px;">
-    </form>
-    <div class="ui right aligned basic segment">
-      <button class="ui {{ ActiveOrDisabled }} button"  v-on:click="login" type="submit">Submit</button>
+<!-- all summary -->
+  <div class='ui very padded segment' style="opacity: 0.9;">
+      <!-- items -->
+      <div v-for="artcs in article" class="ui vertical padded segment" >
+          <h3 class="ui center aligned header">{{ artcs.title }}</h3>
+          <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
+          <p>{{ artcs.content|limitBy 300 }}<br> ......<p>
+          <div class="ui secondary  menu">
+            <a class="item">
+              <h4 class="ui header" v-on:click='action_api(artcs.id)'>
+                Read More
+              </h4>
+            </a>
+            <div class="right menu">
+              <a class="ui item">
+                <i class="like icon"></i> {{ artcs.vote }} Like
+              </a>
+              <a class="ui item">
+                <i class="comment icon"></i> 1 comment
+              </a>
+            </div>
+
+          </div>
+
+          <h4 class="ui horizontal header divider"></h4>
+      </div>
+
     </div>
-  </div>
 
   <div class='ui basic center aligned segment' style="margin-top: 200px;background-color:#A9D0F5;opacity:0.9;">
    <p style="color:white;">© 2017   JingxinFu.<br>Contact: jacobxin24@gmail.com </br></p>
@@ -66,18 +76,10 @@
         article:[],
       },
       methods:{
-      get_userprofile_id : function(name){
-            if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
-            return decodeURIComponent(name[1]);
-          },
        getData:function(){
-
           var self = this;
-          var id = this.get_userprofile_id('id')
-          console.log(id)
-          var url = "/api/detail/" + String(id)
           reqwest({
-            url:url,
+            url:'/api/allArticle/',
             type:'json',
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
             success:function(resp){
@@ -85,7 +87,7 @@
               self.article=resp;
             },
             error:function(error){
-            //  window.location = '/home/';
+              window.location = '/home/';
             },
 
           })
@@ -100,7 +102,13 @@
       },
       backHome : function(){
         window.location = '/article/';
-      }
+      },
+      action_api : function(item_id){
+        window.location = "/detail/?id=" + String(item_id);
+      },
+      writeSummary : function(){
+        window.location = '/editing/';
+      },
 
       },
 

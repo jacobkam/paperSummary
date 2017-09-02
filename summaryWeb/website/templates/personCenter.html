@@ -19,11 +19,14 @@
       <a class="active item">
         Home
       </a>
-      <a class="item">
-        Best Summary
+      <a v-on:click='getAllSummary' class="item" >
+        All Summary
       </a>
       <a class="item">
         Peer Review
+      </a>
+      <a class="item" v-on:click='writeSummary'>
+         <i class='edit icon'> </i>Write Summary
       </a>
       <div class="right menu" v-on:click="logout">
         <a class="ui item" >
@@ -48,25 +51,39 @@
 
 <!-- favorite summary -->
     <div class="six wide column">
-     <div class='ui center aligned segment' style="opacity: 0.9">
-
-        <div class="ui left aligned category search">
+     <div class='ui segment' style="opacity: 0.9;margin-left:20px;">
+       <a class="ui blue ribbon label">Favorite</a>
+        <div class="ui search" style="padding-top:10px;">
           <div class="ui icon input">
             <input class="prompt" type="text" v-model='bestArticle' placeholder="Search Your Favorite Summary title" style="width: 300px;">
             <i class="search icon"></i>
           </div>
         </div>
         <!-- items -->
-        <div v-for="artcs in favorite" class="ui vertical egment">
-            <div class="ui text container">
-              <h3 class="ui header">{{ artcs.title }}</h3>
-              <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
-              <p>{{ artcs.content|limitBy 100 }}<p>
-              <a class="ui button">Read More</a>
-              <h4 class="ui horizontal header divider">
-              </h4>
+        <div v-for="artcs in favorite" class="ui vertical segment" >
+
+            <h3 class="ui center aligned header">{{ artcs.title }}</h3>
+            <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
+            <p>{{ artcs.content|limitBy 300 }}<br> ......<p>
+            <div class="ui secondary  menu">
+              <a class="item">
+                <h4 class="ui header" v-on:click='action_api(artcs.id)'>
+                  Read More
+                </h4>
+              </a>
+              <div class="right menu">
+                <a class="ui item">
+                  <i class="like icon"></i> 1 Like
+                </a>
+                <a class="ui item">
+                  <i class="comment icon"></i> 1 comment
+                </a>
+              </div>
+
             </div>
-          </div>
+
+            <h4 class="ui horizontal header divider"></h4>
+        </div>
 
 
       </div>
@@ -74,9 +91,10 @@
 
 <!-- personal summary -->
     <div class="six wide column">
-      <div class='ui segment' style="opacity: 0.9;margin-right: 10px;">
+      <div class='ui segment' style="opacity: 0.9;margin-right: 20px;">
       <!-- searching -->
-        <div class="ui search">
+        <a class="ui teal right ribbon label">Personal</a>
+        <div class="ui search" style="padding-top:10px;">
           <div class="ui icon input">
             <input class="prompt" type="text" v-model='personalArticle' placeholder="Search Your Personal Summary title" style="width: 300px;">
             <i class="search icon"></i>
@@ -84,14 +102,27 @@
         </div>
       <!-- items -->
       <div v-for="artcs in personal" class="ui vertical segment" >
+
           <h3 class="ui center aligned header">{{ artcs.title }}</h3>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
           <p>{{ artcs.content|limitBy 300 }}<br> ......<p>
-          <a href="#">
-            <h4 class="ui header" >
-              Read More
-            </h4>
-          </a>
+          <div class="ui secondary  menu">
+            <a class="item">
+              <h4 class="ui header" v-on:click='action_api(artcs.id)'>
+                Read More
+              </h4>
+            </a>
+            <div class="right menu">
+              <a class="ui item">
+                <i class="like icon"></i> 1 Like
+              </a>
+              <a class="ui item">
+                <i class="comment icon"></i> 1 comment
+              </a>
+            </div>
+
+          </div>
+
           <h4 class="ui horizontal header divider"></h4>
       </div>
 
@@ -134,6 +165,15 @@
       logout : function () {
         Cookies.remove('token');
         window.location = '/home/';
+      },
+      getAllSummary : function(){
+        window.location = '/articleList/';
+      },
+      action_api : function(item_id){
+        window.location = "/detail/?id=" + String(item_id);
+      },
+      writeSummary : function(){
+        window.location = '/editing/';
       },
 
       },

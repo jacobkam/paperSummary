@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate,login
 import datetime
- 
+
 
 @api_view(['POST'])
 @csrf_exempt
@@ -27,7 +27,7 @@ def login(request):
 			if not created:
 			# update the created time of the token to keep it valid
 				token.created = datetime.datetime.utcnow()
-				token.save() 
+				token.save()
 
 			body={
 			'msg':'success',
@@ -36,7 +36,7 @@ def login(request):
 			}
 			return Response(body,status=status.HTTP_200_OK)
 		else:
-			# determine if user is existed 
+			# determine if user is existed
 			try:
 				user_is_exist = User.objects.get(username=username)
 				body={
@@ -61,13 +61,13 @@ def login(request):
 @api_view(['GET'])
 @authentication_classes((TokenAuthentication,))
 def article(request):
-	print ('auth is :',request.auth)
-	print ('user is :',request.user)
-	print(request.user.id)
+	# print ('auth is :',request.auth)
+	# print ('user is :',request.user)
+	# print(request.user.id)
 	if request.method == 'GET':
 		if request.auth:
 			personalArticle = Article.objects.filter(belong_to_id=request.user.id)
-			print(Article.objects.filter(id__in=[1,2]))
+			#print(Article.objects.filter(id__in=[1,2]))
 			try:
 				user_like = Ticket.ojects.filter(voter_id=request.user.id,like=True)
 				user_like_article_id = list(map(lambda x: x['article_id'],list(user_like.values('article_id').distinct())))
@@ -89,6 +89,31 @@ def article(request):
 			}
 			return Response(body, status=status.HTTP_403_FORBIDDEN)
 
-    
 
-        
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
+def allArticle(request):
+    if request.method == 'GET':
+        if request.auth:
+            article = Article.objects.all().order_by('-vote')
+            articleQueryset = ArticleSerializers(article,many=True)
+            return Response(articleQueryset.data,status=status.HTTP_200_OK)
+        else:
+            body = {
+            'msg':'Sorry,Please login first',
+            }
+            return Response(body, status=status.HTTP_403_FORBIDDEN)
+
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
+def articleDetail(request,id):
+    if request.method == 'GET':
+        if request.auth:
+            article = Article.objects.get(id=id)
+            articleQueryset = ArticleSerializers(article,many=False)
+            return Response(articleQueryset.data,status=status.HTTP_200_OK)
+        else:
+            body = {
+            'msg':'Sorry,Please login first',
+            }
+            return Response(body, status=status.HTTP_403_FORBIDDEN)
