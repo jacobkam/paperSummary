@@ -21,6 +21,7 @@ from website.api import login,article
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^home/', homePage,name='home'),
+    url(r'^$', homePage,name='home'),
     url(r'^article/$', articleReview,name='articleReview'),
 
     ## api
