@@ -9,7 +9,7 @@
     <script src="{% static 'js/reqwest.js' %}"></script>
     <script src="{% static 'js/js.cookie.js' %}"></script>
 
-  
+
     <style media="screen">
               body {
                   background-image:url();
@@ -38,7 +38,7 @@
   <div class="ui vertical center aligned inverted segment masthead">
       <h1 class="ui  heasder">Welcome</h1>
   </div>
-  
+
   <div class="ui login container">
     <form class="ui form" v-if="show==true">
       <div class="ui {{ errorName }} field">
@@ -65,7 +65,7 @@
       <p>USERNAME:{{ msg.username[0] }}</p>
       <p>PASSWORD:{{ msg.password[0] }}</p>
     </div>
-    
+
   </div>
 
   <div class='ui basic center aligned segment'>
@@ -103,7 +103,7 @@
                 Cookies.set('token',resp.token);
                 console.log('token is :',resp.token);
                 self.msg = resp.msg;
-                window.location = 'http://127.0.0.1:8000/article/';
+                window.location = '/article/';
           },
 
           error:function(error){
@@ -133,7 +133,7 @@
         });
       },
 
-      
+
     },
 
    computed :{

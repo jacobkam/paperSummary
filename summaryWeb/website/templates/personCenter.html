@@ -23,7 +23,7 @@
         Best Summary
       </a>
       <a class="item">
-        Peer Review 
+        Peer Review
       </a>
       <div class="right menu" v-on:click="logout">
         <a class="ui item" >
@@ -69,7 +69,7 @@
           </div>
 
 
-      </div>      
+      </div>
     </div>
 
 <!-- personal summary -->
@@ -84,14 +84,15 @@
         </div>
       <!-- items -->
       <div v-for="artcs in personal" class="ui vertical segment" >
-        <div class="ui text container" >
-          <h3 class="ui header">{{ artcs.title }}</h3>
+          <h3 class="ui center aligned header">{{ artcs.title }}</h3>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
-          <p>{{ artcs.content|limitBy 200 }}<p>
-          <a class="ui large button">Read More</a>
-          <h4 class="ui horizontal header divider">
-          </h4>
-        </div>
+          <p>{{ artcs.content|limitBy 300 }}<br> ......<p>
+          <a href="#">
+            <h4 class="ui header" >
+              Read More
+            </h4>
+          </a>
+          <h4 class="ui horizontal header divider"></h4>
       </div>
 
       </div>
@@ -115,7 +116,7 @@
        getData:function(){
           var self = this;
           reqwest({
-            url:'http://127.0.0.1:8000/api/article/',
+            url:'/api/article/',
             type:'json',
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
             success:function(resp){
@@ -124,7 +125,7 @@
               self.pArticle=resp.personalArticle;
             },
             error:function(error){
-              window.location = 'http://127.0.0.1:8000/home/';
+              window.location = '/home/';
             },
 
           })
@@ -132,7 +133,7 @@
 
       logout : function () {
         Cookies.remove('token');
-        window.location = 'http://127.0.0.1:8000/home/';
+        window.location = '/home/';
       },
 
       },
