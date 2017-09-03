@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import date
-from faker import Factory
+#from faker import Factory
 # Create your models here.
 class UserProfile(models.Model):
     belong_to = models.OneToOneField(to=User,related_name='userprofile')
