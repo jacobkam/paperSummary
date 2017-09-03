@@ -13,33 +13,36 @@
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
 <body  id="app">
-  <div class="ui basic center aligned segment" style="background-color: #A9D0F5;opacity:0.9;">
-    <h1 style="color:white;">Paper Summary</h1>
-    <div class="ui secondary pointing inverted large menu" >
-      <a v-on:click='backHome' class="item">
-        Home
+<div class="ui top blue fixed menu" >
+      <div class="item">
+        <h1 style="color:teal;">Paper Summary</h1>
+      </div>
+      <a class="item" v-on:click='backHome'>
+      Home
       </a>
       <a v-on:click='getAllSummary' class="active item" >
-        All Summary
+      All Summary
       </a>
-      <a class="item">
-        Peer Review
+      <a class="item" v-on:click='getReview'>
+      Peer Review
       </a>
-      <a class="item">
-         <i class='edit icon'> </i>Write Summary
+      <a class="item" v-on:click='writeSummary'>
+       <i class='edit icon'> </i>Write Summary
       </a>
-      <div class="right menu" v-on:click="logout">
-        <a class="ui item" >
-          Logout
-        </a>
+      <div class="right menu" v-on:click="logout" >
+      <a class="ui item" >
+        Logout
+      </a>
       </div>
     </div>
-  </div>
-
 <!-- all summary -->
-  <div class='ui very padded segment' style="opacity: 0.9;">
+  <div class='ui very padded segment' style="opacity: 0.9;padding-right: 250px;padding-left: 250px;margin-top: 50px; ">
       <!-- items -->
           <h3 class="ui center aligned header">{{ article.title }}</h3>
+          <h5 class="ui center aligned header">
+            <div class="sub header">PubDate: {{article.createDate}}</div>
+          </h5>
+          <h4 class="ui center aligned header"><a class="ui red label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
           <p>{{ article.content }}.<p>
           <div class="ui secondary  menu">
@@ -101,7 +104,13 @@
       },
       backHome : function(){
         window.location = '/article/';
-      }
+      },
+      getReview : function(){
+        window.location = '/review/';
+      },
+      writeSummary : function(){
+        window.location = '/editing/';
+      },
 
       },
 

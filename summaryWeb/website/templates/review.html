@@ -13,17 +13,17 @@
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
 <body  id="app">
-  <div class="ui top blue fixed menu" >
+ <div class="ui top blue fixed menu" >
       <div class="item">
         <h1 style="color:teal;">Paper Summary</h1>
       </div>
       <a class="item" v-on:click='backHome'>
       Home
       </a>
-      <a v-on:click='getAllSummary' class="active item" >
+      <a v-on:click='getAllSummary' class="item" >
       All Summary
       </a>
-      <a class="item" v-on:click='getReview'>
+      <a class="active item" v-on:click='getReview'>
       Peer Review
       </a>
       <a class="item" v-on:click='writeSummary'>
@@ -46,35 +46,31 @@
         <a class="item" v-on:click="filterArticle('Cancer Epigenetics')">Cancer Epigenetics</a>
         <a class="item" v-on:click="filterArticle('Drug response and resistance')">Drug response and resistance</a>
       </div>
-      <div v-for="artcs in article" class="ui vertical padded segment" style="margin-left: 200px;margin-top: 20px;>
-          <h3 class="ui center aligned header">{{ artcs.title }}</h3>
+   
+      <div v-for="artcs in article" class="ui vertical padded segment"  style="margin-left: 200px;margin-top: 20px;">
+          <h3 class="ui center aligned header">
+            {{ artcs.title }}
+          </h3>
           <h5 class="ui center aligned header">
             <div class="sub header">PubDate: {{artcs.createDate}}</div>
           </h5>
-           <h4 class="ui center aligned header"><a class="ui red label" style="margin-bottom: 5px;">{{artcs.tag}}</a></h4>
+          <h4 class="ui center aligned header"><a class="ui red label" style="margin-bottom: 5px;">{{artcs.tag}}</a></h4>
+           
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
           <p>{{ artcs.content|limitBy 400 }}<br> ......<p>
           <div class="ui secondary  menu">
-            <a class="item">
-              <h4 class="ui header" v-on:click='action_api(artcs.id)'>
+            <a class="item" v-on:click='action_api(artcs.id)'>
+              <h4 class="ui header" >
                 Read More
               </h4>
             </a>
-            <div class="right menu">
-              <a class="ui item">
-                <i class="like icon"></i> {{ artcs.vote }} Like
-              </a>
-              <a class="ui item">
-                <i class="comment icon"></i> 1 comment
-              </a>
-            </div>
 
           </div>
 
           <h4 class="ui horizontal header divider"></h4>
       </div>
 
-    </div>
+  </div>
 
   <div class='ui basic center aligned segment' style="margin-top: 200px;background-color:#A9D0F5;opacity:0.9;">
    <p style="color:white;">© 2017   JingxinFu.<br>Contact: jacobxin24@gmail.com </br></p>
@@ -92,13 +88,13 @@
        getData:function(){
           var self = this;
           reqwest({
-            url:'/api/allArticle/',
+            url:'/api/review/',
             type:'json',
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
             success:function(resp){
               console.log(resp);
-              self.Allarticle=resp;
               self.article=resp;
+              self.Allarticle=resp;
             },
             error:function(error){
               window.location = '/home/';
@@ -114,17 +110,17 @@
       getAllSummary : function(){
         window.location = '/articleList/';
       },
+      getReview : function(){
+        window.location = '/review/';
+      },
       backHome : function(){
         window.location = '/article/';
       },
       action_api : function(item_id){
-        window.location = "/detail/?id=" + String(item_id);
+        window.location = "/revDetial/?id=" + String(item_id);
       },
       writeSummary : function(){
         window.location = '/editing/';
-      },
-      getReview : function(){
-        window.location = '/review/';
       },
       filterArticle : function(items){
         var self=this;
@@ -138,6 +134,7 @@
           self.article=self.Allarticle;
         };
       },
+
 
       },
 

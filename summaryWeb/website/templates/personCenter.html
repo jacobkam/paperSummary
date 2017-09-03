@@ -13,30 +13,30 @@
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
 <body  id="app">
-  <div class="ui basic center aligned segment" style="background-color: #A9D0F5;opacity:0.9;">
-    <h1 style="color:white;">Paper Summary</h1>
-    <div class="ui secondary pointing inverted large menu" >
-      <a class="active item">
-        Home
-      </a>
-      <a v-on:click='getAllSummary' class="item" >
-        All Summary
-      </a>
-      <a class="item">
-        Peer Review
-      </a>
-      <a class="item" v-on:click='writeSummary'>
-         <i class='edit icon'> </i>Write Summary
-      </a>
-      <div class="right menu" v-on:click="logout">
-        <a class="ui item" >
-          Logout
-        </a>
-      </div>
+  <div class="ui top blue fixed menu" >
+    <div class="item">
+      <h1 style="color:teal;">Paper Summary</h1>
     </div>
-  </div>
+    <a class="active item">
+    Home
+    </a>
+    <a v-on:click='getAllSummary' class="item" >
+    All Summary
+    </a>
+    <a class="item" v-on:click='getReview'>
+    Peer Review
+    </a>
+    <a class="item" v-on:click='writeSummary'>
+     <i class='edit icon'> </i>Write Summary
+    </a>
+    <div class="right menu" v-on:click="logout" >
+    <a class="ui item" >
+      Logout
+    </a>
+    </div>
+</div>
 
-  <div class='ui grid'>
+  <div class='ui grid' style="margin-top: 20px;">
 
     <div class="four wide column">
       <div class="ui left card" style="margin-left: 10px;">
@@ -63,6 +63,11 @@
         <div v-for="artcs in favorite" class="ui vertical segment" >
 
             <h3 class="ui center aligned header">{{ artcs.title }}</h3>
+
+            <h5 class="ui center aligned header">
+              <div class="sub header">PubDate: {{artcs.createDate}}</div>
+            </h5>
+            <a class="ui red label" style="margin-bottom: 5px;">{{artcs.tag}}</a>
             <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
             <p>{{ artcs.content|limitBy 300 }}<br> ......<p>
             <div class="ui secondary  menu">
@@ -73,10 +78,10 @@
               </a>
               <div class="right menu">
                 <a class="ui item">
-                  <i class="like icon"></i> 1 Like
+                  <i class="like icon"></i> {{ artcs.vote }} Like
                 </a>
                 <a class="ui item">
-                  <i class="comment icon"></i> 1 comment
+                  <i class="comment icon"></i> {{ artcs.commentCount }} comment
                 </a>
               </div>
 
@@ -104,6 +109,10 @@
       <div v-for="artcs in personal" class="ui vertical segment" >
 
           <h3 class="ui center aligned header">{{ artcs.title }}</h3>
+          <h5 class="ui center aligned header">
+            <div class="sub header">PubDate: {{artcs.createDate}}</div>
+          </h5>
+          <a class="ui red label" style="margin-bottom: 5px;">{{artcs.tag}}</a>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
           <p>{{ artcs.content|limitBy 300 }}<br> ......<p>
           <div class="ui secondary  menu">
@@ -114,10 +123,10 @@
             </a>
             <div class="right menu">
               <a class="ui item">
-                <i class="like icon"></i> 1 Like
+                <i class="like icon"></i> {{ artcs.vote }} Like
               </a>
               <a class="ui item">
-                <i class="comment icon"></i> 1 comment
+                <i class="comment icon"></i> {{ artcs.commentCount }} comment
               </a>
             </div>
 
@@ -174,6 +183,9 @@
       },
       writeSummary : function(){
         window.location = '/editing/';
+      },
+      getReview : function(){
+        window.location = '/review/';
       },
 
       },

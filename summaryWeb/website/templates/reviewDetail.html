@@ -13,17 +13,17 @@
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
 <body  id="app">
-  <div class="ui top blue fixed menu" >
+ <div class="ui top blue fixed menu" >
       <div class="item">
         <h1 style="color:teal;">Paper Summary</h1>
       </div>
       <a class="item" v-on:click='backHome'>
       Home
       </a>
-      <a v-on:click='getAllSummary' class="active item" >
+      <a v-on:click='getAllSummary' class="item" >
       All Summary
       </a>
-      <a class="item" v-on:click='getReview'>
+      <a class="active item" v-on:click='getReview'>
       Peer Review
       </a>
       <a class="item" v-on:click='writeSummary'>
@@ -37,44 +37,56 @@
     </div>
 
 <!-- all summary -->
-  <div class='ui very padded segment' style="opacity: 0.9;padding-left:100px;padding-right: 100px;">
+  <div class='ui very padded segment' style="opacity: 0.9;padding-right: 250px;padding-left: 250px;margin-top: 50px;">
       <!-- items -->
-      <div class="ui left fixed vertical menu" style="margin-top: 60px;">
-        <a class="item" v-on:click="filterArticle('')">ALL</a>
-        <a class="item" v-on:click="filterArticle('Cancer immunology')">Cancer immunology</a>
-        <a class="item" v-on:click="filterArticle('Cancer Epigenetics')">Cancer Epigenetics</a>
-        <a class="item" v-on:click="filterArticle('Cancer Epigenetics')">Cancer Epigenetics</a>
-        <a class="item" v-on:click="filterArticle('Drug response and resistance')">Drug response and resistance</a>
-      </div>
-      <div v-for="artcs in article" class="ui vertical padded segment" style="margin-left: 200px;margin-top: 20px;>
-          <h3 class="ui center aligned header">{{ artcs.title }}</h3>
+          <h3 class="ui center aligned header">{{ article.title }}</h3>
+
           <h5 class="ui center aligned header">
-            <div class="sub header">PubDate: {{artcs.createDate}}</div>
+            <div class="sub header">PubDate: {{article.createDate}}</div>
           </h5>
-           <h4 class="ui center aligned header"><a class="ui red label" style="margin-bottom: 5px;">{{artcs.tag}}</a></h4>
+           <h4 class="ui center aligned header"><a class="ui red label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
-          <p>{{ artcs.content|limitBy 400 }}<br> ......<p>
+          <p>{{ article.content }}.<p>
           <div class="ui secondary  menu">
-            <a class="item">
-              <h4 class="ui header" v-on:click='action_api(artcs.id)'>
-                Read More
-              </h4>
-            </a>
-            <div class="right menu">
+            <div class="left menu">
               <a class="ui item">
-                <i class="like icon"></i> {{ artcs.vote }} Like
-              </a>
-              <a class="ui item">
-                <i class="comment icon"></i> 1 comment
+                <i class="like icon"></i>  Like
               </a>
             </div>
 
           </div>
 
-          <h4 class="ui horizontal header divider"></h4>
-      </div>
 
-    </div>
+          <!-- comment-->
+          <div class="ui comments" >
+            <div class="comment" v-for="comment in comments">
+              <a class="avatar">
+                <img src="/images/avatar/small/joe.jpg">
+              </a>
+              <div class="content">
+                <a class="author">annonymous</a>
+                <div class="metadata">
+                  <div class="date">{{comment.createDate}}</div>
+                </div>
+                <div class="text">
+                  <p>{{comment.content}} </p>
+                </div>
+              </div>
+            </div>
+            <form class="ui reply form">
+              <div class="field">
+                <textarea></textarea>
+              </div>
+              <div class="ui primary submit labeled icon button">
+                <i class="icon edit"></i> Add Comment
+              </div>
+            </form>
+          </div>
+
+
+  </div>
+
+  
 
   <div class='ui basic center aligned segment' style="margin-top: 200px;background-color:#A9D0F5;opacity:0.9;">
    <p style="color:white;">© 2017   JingxinFu.<br>Contact: jacobxin24@gmail.com </br></p>
@@ -85,23 +97,31 @@
       el:"#app",
       data:{
         article:[],
-        Allarticle:[],
-        items:'',
+        comments:[],
       },
       methods:{
+      get_userprofile_id : function(name){
+            if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+            return decodeURIComponent(name[1]);
+          },
        getData:function(){
+
           var self = this;
+          var id = this.get_userprofile_id('id')
+          console.log(id)
+          var url = "/api/revdetail/" + String(id)
           reqwest({
-            url:'/api/allArticle/',
+            url:url,
             type:'json',
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
             success:function(resp){
               console.log(resp);
-              self.Allarticle=resp;
-              self.article=resp;
+              self.article=resp.article;
+              self.comments=resp.comment;
+              console.log(self.comments);
             },
             error:function(error){
-              window.location = '/home/';
+            //  window.location = '/home/';
             },
 
           })
@@ -117,26 +137,11 @@
       backHome : function(){
         window.location = '/article/';
       },
-      action_api : function(item_id){
-        window.location = "/detail/?id=" + String(item_id);
-      },
-      writeSummary : function(){
-        window.location = '/editing/';
-      },
       getReview : function(){
         window.location = '/review/';
       },
-      filterArticle : function(items){
-        var self=this;
-        self.items=items;
-        function tagFilter(result) {
-                    return result.tag == self.items;
-                };
-        if(items!=''){
-          self.article = self.Allarticle.filter(tagFilter);
-        }else{
-          self.article=self.Allarticle;
-        };
+      writeSummary : function(){
+        window.location = '/editing/';
       },
 
       },

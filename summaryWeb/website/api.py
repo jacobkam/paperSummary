@@ -14,11 +14,13 @@ import datetime
 @api_view(['POST'])
 @csrf_exempt
 def login(request):
+
 	serializers = UserSerializers(data=request.data)
 	if serializers.is_valid():
 		username = serializers.initial_data['username']
 		password = serializers.initial_data['password']
 		# validation check
+
 		user = authenticate(username=username,password=password)
 
 		if user:
@@ -95,14 +97,35 @@ def article(request):
 def allArticle(request):
     if request.method == 'GET':
         if request.auth:
-            article = Article.objects.all().order_by('-vote')
-            articleQueryset = ArticleSerializers(article,many=True)
-            return Response(articleQueryset.data,status=status.HTTP_200_OK)
+        	now = datetime.date.today()
+        	lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
+        	article = Article.objects.filter(createDate__lt=lastMonday).order_by('-vote')
+        	articleQueryset = ArticleSerializers(article,many=True)
+        	return Response(articleQueryset.data,status=status.HTTP_200_OK)
         else:
             body = {
             'msg':'Sorry,Please login first',
             }
             return Response(body, status=status.HTTP_403_FORBIDDEN)
+
+            
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
+def reviewArticle(request):
+	if request.method == 'GET':
+	    if request.auth:
+	    	# compute date
+	    	now = datetime.date.today()
+	    	lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
+	    	article = Article.objects.filter(createDate__gte=lastMonday).order_by('-createDate')
+	    	articleQueryset = ArticleSerializers(article,many=True)
+	    	return Response(articleQueryset.data,status=status.HTTP_200_OK)
+	    else:
+	        body = {
+	        'msg':'Sorry,Please login first',
+	        }
+	        return Response(body, status=status.HTTP_403_FORBIDDEN)
+
 
 @api_view(['GET'])
 @authentication_classes((TokenAuthentication,))
@@ -117,3 +140,26 @@ def articleDetail(request,id):
             'msg':'Sorry,Please login first',
             }
             return Response(body, status=status.HTTP_403_FORBIDDEN)
+
+
+
+@api_view(['GET'])
+@authentication_classes((TokenAuthentication,))
+def revDetail(request,id):
+    if request.method == 'GET':
+        if request.auth:
+            article = Article.objects.get(id=id)
+            comment = Comment.objects.get(article_id=id,user_id=request.user.id)
+            articleQueryset = ArticleSerializers(article,many=False)
+            commentQueryset = CommentSerilizers(comment)
+            body={
+            'article':articleQueryset.data,
+            'comment':commentQueryset.data,
+            }
+            return Response(body,status=status.HTTP_200_OK)
+        else:
+            body = {
+            'msg':'Sorry,Please login first',
+            }
+            return Response(body, status=status.HTTP_403_FORBIDDEN)
+

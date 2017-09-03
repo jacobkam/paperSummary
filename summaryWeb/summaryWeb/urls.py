@@ -15,8 +15,8 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from website.views import homePage,articleReview,articleList,detail,editing
-from website.api import login,article,allArticle,articleDetail
+from website.views import homePage,articleReview,articleList,detail,editing,review,reviewDetial
+from website.api import login,article,allArticle,articleDetail,reviewArticle,revDetail
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -25,11 +25,16 @@ urlpatterns = [
     url(r'^article/$', articleReview,name='articleReview'),
     url(r'^articleList/$', articleList,name='articleList'),
     url(r'^detail/',detail,name='detail'),
+    url(r'^revDetial/',reviewDetial,name='revDetial'),
     url(r'^editing/',editing,name='editing'),
+    url(r'^review/',review,name='review'),
+
 
     ## api
     url(r'^api/login/', login),
     url(r'^api/article/', article),
     url(r'^api/allArticle/', allArticle),
+    url(r'^api/review/', reviewArticle),
     url(r'^api/detail/(?P<id>\d+)',articleDetail),# get detail
+    url(r'^api/revdetail/(?P<id>\d+)',revDetail),# get detail for review
 ]

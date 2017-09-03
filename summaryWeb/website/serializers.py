@@ -26,3 +26,8 @@ class TicketSerializers(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = '__all__'
+
+class CommentSerilizers(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = '__all__'

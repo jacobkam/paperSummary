@@ -22,30 +22,31 @@
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
 <body  id="app">
-  <div class="ui basic center aligned segment" style="background-color: #A9D0F5;opacity:0.9;">
-    <h1 style="color:white;">Paper Summary</h1>
-    <div class="ui secondary pointing inverted large menu" >
-      <a v-on:click='backHome' class="item">
-        Home
-      </a>
-      <a v-on:click='getAllSummary' class="active item" >
-        All Summary
-      </a>
-      <a class="item">
-        Peer Review
-      </a>
-      <a class="item">
-         <i class='edit icon'> </i>Write Summary
-      </a>
-      <div class="right menu" v-on:click="logout">
-        <a class="ui item" >
-          Logout
-        </a>
-      </div>
+
+  <div class="ui top blue fixed menu" >
+    <div class="item">
+      <h1 style="color:teal;">Paper Summary</h1>
+    </div>
+    <a class="item" v-on:click='backHome'>
+    Home
+    </a>
+    <a v-on:click='getAllSummary' class="item" >
+    All Summary
+    </a>
+    <a class="item" v-on:click='getReview'>
+    Peer Review
+    </a>
+    <a class="active item" v-on:click='writeSummary'>
+     <i class='edit icon'> </i>Write Summary
+    </a>
+    <div class="right menu" v-on:click="logout" >
+    <a class="ui item" >
+      Logout
+    </a>
     </div>
   </div>
 
-  <div class="ui container segment inputs">
+  <div class="ui container segment inputs" style="margin-top: 100px;"">
     <form class="ui form">
       <input type="text" name="" value="" placeholder="Title" style="margin-bottom:10px;">
       <input type="text" name="" value="" placeholder="Content" style="height:500px;">
@@ -100,7 +101,10 @@
       },
       backHome : function(){
         window.location = '/article/';
-      }
+      },
+      getReview : function(){
+        window.location = '/review/';
+      },
 
       },
 
