@@ -4,6 +4,7 @@
   <head>
     <meta charset="utf-8">
     <title>Paper Summary Log In</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
     <link rel="stylesheet" href="{% static 'css/semantic.css' %}">
     <link rel="stylesheet" href="{% static 'css/home.css' %}">
     <script src="{% static 'js/vue1.js' %}"></script>
@@ -21,7 +22,7 @@
   </head>
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
-<body  id="app">
+<body  id="app"  class="dimmable {{ canScroll }} ">
 
   <div class="ui top blue fixed menu" >
     <div class="item">
@@ -46,14 +47,72 @@
     </div>
   </div>
 
-  <div class="ui container segment inputs" style="margin-top: 100px;"">
-    <form class="ui form">
-      <input type="text" name="" value="" placeholder="Title" style="margin-bottom:10px;">
-      <input type="text" name="" value="" placeholder="Content" style="height:500px;">
-    </form>
-    <div class="ui right aligned basic segment">
-      <button class="ui {{ ActiveOrDisabled }} button"  v-on:click="login" type="submit">Submit</button>
+  <div class="ui dimmer animated {{ fadeInOut }} active" v-if='show'>
+      <div class="ui padded modal segment active" >
+        <a class="ui right red corner label" v-on:click="model_switch">
+        <i class="delete icon"></i>
+        </a>
+        <h3 class="ui center aligned header">{{notice.header}}</h3>
+        <div class="content" style="color:grey">
+          <p>{{notice.content}}</p>
+        </div>
+
+        <div class="ui center aligned basic segment"  v-if='Thecase == 2'>
+          <button class="ui blue button"  v-on:click="saveOrSubmit('False')" type="submit">Submit</button>
+        </div>
     </div>
+  </div>
+
+  <div class="ui container segment inputs" style="margin-top: 100px;"">
+    <div class="ui error message" v-if="pubIDvalidation !='' ">
+        <p>{{ message }}</p>
+    </div>
+    <div class="ui grid">
+      <div class="six wide column">
+        <div class="ui input {{pubIDvalidation}}" style="margin-top: 10px;">
+          <input type="text" v-model='PubMedID' value='{{PubMedID}]' placeholder="PubMed ID" style="margin-bottom:10px;">
+        </div>
+      </div>
+
+      <div class="five wide column">
+        
+        <input type="radio" id="Cancer immunology" value="Cancer immunology" v-model="tag">
+        <label for="Cancer immunology" class="ui red horizontal label" style="margin-bottom: 10px;">Cancer immunology</label>
+        <br>
+        <input type="radio" id="Cancer Epigenetics" value="Cancer Epigenetics" v-model="tag">
+        <label for="Cancer Epigenetics" class="ui teal horizontal label" style="margin-bottom: 10px;">Cancer Epigenetics</label>
+
+      </div>
+      <div class="five wide column" style="margin-left: -10px;">
+        <input type="radio" id="CRISPR screens" value="CRISPR screens" v-model="tag">
+        <label for="CRISPR screens" class="ui purple horizontal label" style="margin-bottom: 10px;">CRISPR screens</label>
+        <br>
+        <input type="radio" id="Drug response and resistance" value="Drug response and resistance" v-model="tag">
+        <label for="Drug response and resistance" class="ui blue horizontal label" style="margin-bottom: 10px;">Drug response and resistance</label> 
+      </div>
+
+    </div>
+    
+
+    
+
+
+    <form class="ui form">
+      <input type="text" v-model='title' value='{{title}}' placeholder="Title" style="margin-bottom:10px;">
+      <input type="text" v-model='content' value='{{content}}' placeholder="Content" style="height:500px;">
+    </form>
+
+    <div class="ui secondary  menu">
+
+      <div class="left menu">
+      <button class="ui {{ ActiveOrDisabled }} button"  v-on:click="saveOrSubmit('True')" type="submit">Save</button>
+      </div>
+      <div class="right menu">
+        <button class="ui {{ ActiveOrDisabled }} button"  v-on:click="preSubmit" type="submit">Submit</button>
+      </div>
+
+    </div>
+
   </div>
 
   <div class='ui basic center aligned segment' style="margin-top: 200px;background-color:#A9D0F5;opacity:0.9;">
@@ -65,8 +124,23 @@
       el:"#app",
       data:{
         article:[],
+        PubMedID:'',
+        pubIDs:[],
+        message:'',
+        content:'',
+        title:'',
+        tag:'',
+        show:false,
+        Thecase:'',
+        notice:{
+          header:'',
+          content:'',
+        },
       },
       methods:{
+      model_switch:function(){
+        this.show=!this.show;
+      },
       get_userprofile_id : function(name){
             if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
             return decodeURIComponent(name[1]);
@@ -74,16 +148,27 @@
        getData:function(){
 
           var self = this;
-          var id = this.get_userprofile_id('id')
-          console.log(id)
-          var url = "/api/detail/" + String(id)
+          var url = "/api/editPage/"
           reqwest({
             url:url,
             type:'json',
+            method:'get',
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
             success:function(resp){
               console.log(resp);
-              self.article=resp;
+              self.article=resp.article;
+              if(self.article!=''){
+                  self.pubIDs = resp.pubIDs;
+                  self.content = self.article.content;
+                  self.title=self.article.title;
+                  self.PubMedID=self.article.pubmedID;
+                  self.tag=self.article.tag;
+                }
+              else{
+                console.log('not true article')
+                self.PubMedID='';
+              }
+
             },
             error:function(error){
             //  window.location = '/home/';
@@ -105,10 +190,80 @@
       getReview : function(){
         window.location = '/review/';
       },
+      writeSummary : function(){
+        window.location = '/editing/';
+      },
+      saveOrSubmit : function(actions){
+        var self = this;
+        if(self.pubIDvalidation ==''){
+          var url = "/api/editPage/";
+          reqwest({
+            url:url,
+            type:'json',
+            method:'post',
+            data : {
+              title:self.title,
+              content :self.content,
+              tag:self.tag,
+              save:actions,
+              pubmedID:self.PubMedID,
+            },
+            headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+            success:function(resp){
+              if(actions=='True'){
+                console.log(actions);
+                self.getData();
+              }else{
+                window.location='/review/';
+              }
+            },
+            error:function(error){
+            //  window.location = '/home/';
+            },
+
+          });
+        }else{
+          this.show=true;
+          this.Thecase=1;
+          this.notice.header='Error';
+          this.notice.content=this.message;
+        };
+      },
+      preSubmit:function(){
+          this.Thecase=2;
+          this.notice.header='Notification';
+          this.notice.content='Please make sure you want to submit now. Once submit, you cannot edit it anymore!'
+          this.model_switch();
+      },
 
       },
 
       computed:{
+        pubIDvalidation : function(){
+          var messageStatus = 'error'
+          if(this.pubIDs.includes(this.PubMedID)){
+            this.message = 'This article has beed read before!';
+          }else if(this.PubMedID.length<3){
+            this.message = 'Please provide a correct PubMed ID!';
+          }else{
+            messageStatus = ''
+          }
+          return messageStatus
+        },
+        canScroll:function () {
+                        if (this.show) {
+                            return 'unscrollable'
+                        } else {
+                            return ''
+                        }
+                    },
+        fadeInOut:function () {
+                        if (this.show) {
+                            return ' fadeIn'
+                        } else {
+                            return ' fadeOut'
+                        }
+                    },
       },
 
       ready:function(){

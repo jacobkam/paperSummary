@@ -69,10 +69,13 @@ def article(request):
 	if request.method == 'GET':
 		if request.auth:
 			personalArticle = Article.objects.filter(belong_to_id=request.user.id)
+			userprofile = UserProfile.objects.get(belong_to_id=request.user.id)
+			userprofileQueryset = UserProfileSerializers(userprofile)
 			#print(Article.objects.filter(id__in=[1,2]))
 			try:
-				user_like = Ticket.ojects.filter(voter_id=request.user.id,like=True)
+				user_like = Ticket.objects.filter(voter_id=request.user.id,like=True)
 				user_like_article_id = list(map(lambda x: x['article_id'],list(user_like.values('article_id').distinct())))
+				print(user_like_article_id)
 				favoriteArticle = Article.objects.filter(id__in=user_like_article_id)
 				favoriteArticleQueryset=ArticleSerializers(favoriteArticle, many=True).data
 			except:
@@ -83,6 +86,7 @@ def article(request):
 			body={
 				'personalArticle':personalArticleQueryset.data,
 				'favoriteArticle':favoriteArticleQueryset,
+				'userprofile':userprofileQueryset.data,
 			}
 			return Response(body, status=status.HTTP_200_OK)
 		else:
@@ -99,7 +103,7 @@ def allArticle(request):
         if request.auth:
         	now = datetime.date.today()
         	lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
-        	article = Article.objects.filter(createDate__lt=lastMonday).order_by('-vote')
+        	article = Article.objects.filter(createDate__gte=lastMonday).order_by('-vote')
         	articleQueryset = ArticleSerializers(article,many=True)
         	return Response(articleQueryset.data,status=status.HTTP_200_OK)
         else:
@@ -127,34 +131,102 @@ def reviewArticle(request):
 	        return Response(body, status=status.HTTP_403_FORBIDDEN)
 
 
-@api_view(['GET'])
+@api_view(['GET','PUT','POST'])
 @authentication_classes((TokenAuthentication,))
 def articleDetail(request,id):
     if request.method == 'GET':
         if request.auth:
             article = Article.objects.get(id=id)
+            #Ticket.objects.all().delete()
+            try:
+            	comment = Comment.objects.filter(article_id=id)
+            	commentQueryset = CommentSerilizers(comment,many=True).data
+            except:
+            	commentQueryset=''
+            try:
+            	ticket = Ticket.objects.get(article_id=id,voter_id=request.user.id)
+            except:
+            	userNow = User.objects.get(id=request.user.id)
+            	ticket_new = Ticket(article=article,voter=userNow)
+            	ticket_new.save()
+            	ticket = ticket_new
             articleQueryset = ArticleSerializers(article,many=False)
-            return Response(articleQueryset.data,status=status.HTTP_200_OK)
-        else:
-            body = {
-            'msg':'Sorry,Please login first',
+            ticketQueryset = TicketSerializers(ticket,many=False)
+            
+            body={
+            'article':articleQueryset.data,
+            'comment':commentQueryset,
+            'ticket':ticketQueryset.data,
             }
-            return Response(body, status=status.HTTP_403_FORBIDDEN)
+            return Response(body,status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+    	print(request.data)
+    	if request.auth:
+    		ticket = Ticket.objects.get(article_id=id,voter_id=request.user.id)
+    		ticket.like = not ticket.like
+    		ticket.save()
+
+    		article = Article.objects.get(id=id)
+    		article.vote += 1 if ticket.like else -1
+    		article.save()
+    		ticketQueryset = TicketSerializers(ticket,many=False)
+    		body={
+    		'ticket':ticketQueryset.data,
+    		'vote':article.vote,
+    		}
+    		return Response(body,status=status.HTTP_200_OK)
+    	else:
+    		body = {'msg':'Sorry,Please login first',}
+    		return Response(body, status=status.HTTP_403_FORBIDDEN)
+
+    elif request.method == 'POST':
+    	if request.auth:
+   			serializers = CommentSerilizers(data=request.data)
+   			print(serializers.initial_data['content'])
+   			content = serializers.initial_data['content']
+   			user = User.objects.get(id=request.user.id)
+   			userprofile = UserProfile.objects.get(belong_to_id=request.user.id)
+   			article=Article.objects.get(id=id)
+   			newComment = Comment(username=user.username,content=content,user=user,article=article,profile_image=userprofile.profile_image_url)
+   			newComment.save()
+   			article.commentCount += 1
+   			article.save()
+   			comments = Comment.objects.filter(article_id=id,user_id=request.user.id)
+   			commentQueryset=CommentSerilizers(comments,many=True)
+   			body={
+   			'comment':commentQueryset.data,
+   			'commentCount':article.commentCount,
+   			}
+   			return Response(body,status=status.HTTP_200_OK)
 
 
-
-@api_view(['GET'])
+@api_view(['GET','PUT','POST'])
 @authentication_classes((TokenAuthentication,))
 def revDetail(request,id):
     if request.method == 'GET':
         if request.auth:
             article = Article.objects.get(id=id)
-            comment = Comment.objects.get(article_id=id,user_id=request.user.id)
+            #Ticket.objects.all().delete()
+            try:
+            	comment = Comment.objects.filter(article_id=id,user_id=request.user.id)
+            	commentQueryset = CommentSerilizers(comment,many=True).data
+            except:
+            	commentQueryset=''
+            try:
+            	ticket = Ticket.objects.get(article_id=id,voter_id=request.user.id)
+            except:
+            	userNow = User.objects.get(id=request.user.id)
+            	ticket_new = Ticket(article=article,voter=userNow)
+            	ticket_new.save()
+            	ticket = ticket_new
             articleQueryset = ArticleSerializers(article,many=False)
-            commentQueryset = CommentSerilizers(comment)
+            ticketQueryset = TicketSerializers(ticket,many=False)
+            
             body={
             'article':articleQueryset.data,
-            'comment':commentQueryset.data,
+            'comment':commentQueryset,
+            'ticket':ticketQueryset.data,
             }
             return Response(body,status=status.HTTP_200_OK)
         else:
@@ -162,4 +234,96 @@ def revDetail(request,id):
             'msg':'Sorry,Please login first',
             }
             return Response(body, status=status.HTTP_403_FORBIDDEN)
+
+    elif request.method == 'PUT':
+    	if request.auth:
+    		ticket = Ticket.objects.get(article_id=id,voter_id=request.user.id)
+    		ticket.like = not ticket.like
+    		ticket.save()
+
+    		article = Article.objects.get(id=id)
+    		article.vote += 1 if ticket.like else -1
+    		article.save()
+    		ticketQueryset = TicketSerializers(ticket,many=False)
+    		return Response(ticketQueryset.data,status=status.HTTP_200_OK)
+    	else:
+    		body = {'msg':'Sorry,Please login first',}
+    		return Response(body, status=status.HTTP_403_FORBIDDEN)
+
+    elif request.method == 'POST':
+    	if request.auth:
+   			serializers = CommentSerilizers(data=request.data)
+   			print(serializers.initial_data['content'])
+   			content = serializers.initial_data['content']
+   			user = User.objects.get(id=request.user.id)
+   			userprofile = UserProfile.objects.get(belong_to_id=request.user.id)
+   			article=Article.objects.get(id=id)
+   			newComment = Comment(username=user.username,content=content,user=user,article=article,profile_image=userprofile.profile_image_url)
+   			newComment.save()
+   			article.commentCount += 1
+   			article.save()
+   			comments = Comment.objects.filter(article_id=id,user_id=request.user.id)
+   			commentQueryset=CommentSerilizers(comments,many=True)
+   			return Response(commentQueryset.data,status=status.HTTP_200_OK)
+
+@api_view(['GET','POST'])
+@authentication_classes((TokenAuthentication,))
+def editPage(request):
+	if request.method == 'GET':
+		if request.auth:
+			allArticles = Article.objects.filter(is_saveToEdit=False)
+			#Article.objects.filter(belong_to_id=request.user.id,is_saveToEdit=True).delete()
+			pubmeDids = list(map(lambda x: x['pubmedID'],list(allArticles.values('pubmedID'))))
+			try:
+				article = Article.objects.get(belong_to_id=request.user.id,is_saveToEdit=True)
+				articleQueryset=ArticleSerializers(article,many=False).data
+			except:
+				articleQueryset=''
+			body={
+				'article':articleQueryset,
+				'pubIDs':pubmeDids,
+			}
+			return Response(body,status=status.HTTP_200_OK)
+
+	elif request.method == 'POST':
+		serializers = ArticleSerializers(data=request.data)
+		title = serializers.initial_data['title']
+		content = serializers.initial_data['content']
+		pubmedID = serializers.initial_data['pubmedID']
+		user = User.objects.get(id=request.user.id)
+		is_save = serializers.initial_data['save']
+		tag = serializers.initial_data['tag']
+		try:
+			# make sure save article are unique
+			preArticle = Article.objects.get(belong_to_id=request.user.id,is_saveToEdit=True)
+			print(is_save)
+			preArticle.title=title
+			preArticle.content=content
+			preArticle.pubmedID=pubmedID
+			preArticle.belong_to=user
+			preArticle.is_saveToEdit=is_save
+			preArticle.tag=tag
+			preArticle.save()
+
+		except:
+			newArtcle = Article(
+				title=title,
+				content=content,
+				pubmedID=pubmedID,
+				belong_to=user,
+				is_saveToEdit=is_save,
+				tag=tag,)
+			newArtcle.save()
+
+		body={
+		'msg':'success!',
+		}
+		return Response(body,status=status.HTTP_200_OK)
+
+	else:
+		body={
+		'msg':'please login first!',
+		}
+		return response(body,status=status.HTTP_403_FORBIDDEN)
+
 

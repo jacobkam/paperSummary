@@ -43,15 +43,18 @@
         <a class="item" v-on:click="filterArticle('')">ALL</a>
         <a class="item" v-on:click="filterArticle('Cancer immunology')">Cancer immunology</a>
         <a class="item" v-on:click="filterArticle('Cancer Epigenetics')">Cancer Epigenetics</a>
-        <a class="item" v-on:click="filterArticle('Cancer Epigenetics')">Cancer Epigenetics</a>
+        <a class="item" v-on:click="filterArticle('CRISPR screens')">CRISPR screens</a>
         <a class="item" v-on:click="filterArticle('Drug response and resistance')">Drug response and resistance</a>
       </div>
-      <div v-for="artcs in article" class="ui vertical padded segment" style="margin-left: 200px;margin-top: 20px;>
-          <h3 class="ui center aligned header">{{ artcs.title }}</h3>
+      <div v-for="artcs in article" class="ui vertical padded segment" style="margin-left: 200px;margin-top: 20px;">
+          <h3 class="ui center aligned header"> {{ artcs.title }}</h3>
           <h5 class="ui center aligned header">
             <div class="sub header">PubDate: {{artcs.createDate}}</div>
           </h5>
-           <h4 class="ui center aligned header"><a class="ui red label" style="margin-bottom: 5px;">{{artcs.tag}}</a></h4>
+           <h4 class="ui center aligned header" v-if="artcs.tag=='Cancer immunology' "><a class="ui red label" style="margin-bottom: 5px;">{{artcs.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="artcs.tag=='Cancer Epigenetics' "><a class="ui teal label" style="margin-bottom: 5px;">{{artcs.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="artcs.tag=='CRISPR screens' "><a class="ui purple label" style="margin-bottom: 5px;">{{artcs.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="artcs.tag=='Drug response and resistance' "><a class="ui blue label" style="margin-bottom: 5px;">{{artcs.tag}}</a></h4>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
           <p>{{ artcs.content|limitBy 400 }}<br> ......<p>
           <div class="ui secondary  menu">

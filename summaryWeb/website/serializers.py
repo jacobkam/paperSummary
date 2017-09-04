@@ -7,7 +7,7 @@ class UserProfileSerializers(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = "__all__"
-        depth = 1
+
 
 class ArticleSerializers(serializers.ModelSerializer):
     class Meta:

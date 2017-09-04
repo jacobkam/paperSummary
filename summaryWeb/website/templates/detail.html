@@ -36,29 +36,59 @@
       </div>
     </div>
 <!-- all summary -->
-  <div class='ui very padded segment' style="opacity: 0.9;padding-right: 250px;padding-left: 250px;margin-top: 50px; ">
+  <div class='ui very padded segment' style="opacity: 0.9;padding-right: 250px;padding-left: 250px;margin-top: 50px;">
       <!-- items -->
           <h3 class="ui center aligned header">{{ article.title }}</h3>
+
           <h5 class="ui center aligned header">
             <div class="sub header">PubDate: {{article.createDate}}</div>
           </h5>
-          <h4 class="ui center aligned header"><a class="ui red label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="article.tag=='Cancer immunology' "><a class="ui red label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="article.tag=='Cancer Epigenetics' "><a class="ui teal label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="article.tag=='CRISPR screens' "><a class="ui purple label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="article.tag=='Drug response and resistance' "><a class="ui blue label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
           <p>{{ article.content }}.<p>
           <div class="ui secondary  menu">
             <div class="right menu">
+              <div class="left menu">
+                <a class="ui item" v-on:click='likeOrnot'>
+                  <i class="{{ ownLike }} like icon"></i>  {{ article.vote }}Like
+                </a>
+              </div>
               <a class="ui item">
-                <i class="like icon"></i> {{ article.vote }} Like
-              </a>
-              <a class="ui item">
-                <i class="comment icon"></i> 1 comment
+                <i class="comment icon"></i> {{ article.commentCount }} comment
               </a>
             </div>
 
           </div>
-    </div>
-
-
+    
+      <!-- comment-->
+      <div class="ui comments" >
+        <div class="comment" v-for="comment in upDatecomments" >
+          <a class="avatar">
+            <img src="/images/avatar/small/joe.jpg">
+          </a>
+          <div class="content">
+            <a class="author">{{comment.username}}</a>
+            <div class="metadata">
+              <div class="date">{{comment.createDate}}</div>
+            </div>
+            <div class="text">
+              <p>{{comment.content}} </p>
+            </div>
+          </div>
+        </div>
+        <form class="ui reply form">
+          <div class="field">
+            <textarea v-model='content'></textarea>
+          </div>
+          <div class="ui primary submit labeled icon button" v-on:click='comment'>
+            <i class="icon edit"></i> Add Comment
+          </div>
+        </form>
+      </div>
+</div>
   <div class='ui basic center aligned segment' style="margin-top: 200px;background-color:#A9D0F5;opacity:0.9;">
    <p style="color:white;">© 2017   JingxinFu.<br>Contact: jacobxin24@gmail.com </br></p>
   </div>
@@ -68,6 +98,10 @@
       el:"#app",
       data:{
         article:[],
+        comments:[],
+        ticket:[],
+        ownLike:'',
+        content:'',
       },
       methods:{
       get_userprofile_id : function(name){
@@ -86,7 +120,14 @@
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
             success:function(resp){
               console.log(resp);
-              self.article=resp;
+              self.article=resp.article;
+              self.comments=resp.comment;
+              self.ticket=resp.ticket;
+              if(self.ticket.like){
+                  self.ownLike='red';
+                }else{
+                  self.ownLike='';
+                };
             },
             error:function(error){
             //  window.location = '/home/';
@@ -111,10 +152,68 @@
       writeSummary : function(){
         window.location = '/editing/';
       },
+      update : function(){
+          var self = this;
+          var id = this.get_userprofile_id('id')
+          var url = "/api/detail/" + String(id)
+          reqwest({
+            url:url,
+            method :'put',
+            type:'json',
+            headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+            success:function(resp){
+              console.log(resp)
+              self.ticket=resp.ticket;
+              self.article.vote=resp.vote;
+            },
+            error:function(error){
+            //  window.location = '/home/';
+            },
+
+          })
+      },
+      comment: function(){
+        var self = this;
+        var id = this.get_userprofile_id('id')
+          var url = "/api/detail/" + String(id)
+          reqwest({
+            url:url,
+            method :'post',
+            type:'json',
+            data : {
+            content : self.content,
+            },
+            headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+            success:function(resp){
+              self.comments = resp.comment;
+              self.article.commentCount=resp.commentCount;
+              console.log(self.comments)
+            },
+            error:function(error){
+            //  window.location = '/home/';
+            },
+
+          })
+      },
+      likeOrnot : function(){
+        var self=this;
+        self.ticket.like = !self.ticket.like;
+        self.update();
+        if(self.ticket.like){
+          self.ownLike='red';
+        }else{
+          self.ownLike='';
+        }
+      },
 
       },
 
       computed:{
+        upDatecomments:function(){
+          var self = this;
+          var newComments = self.comments;
+          return newComments;
+        }
       },
 
       ready:function(){

@@ -44,13 +44,16 @@
           <h5 class="ui center aligned header">
             <div class="sub header">PubDate: {{article.createDate}}</div>
           </h5>
-           <h4 class="ui center aligned header"><a class="ui red label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
+           <h4 class="ui center aligned header" v-if="article.tag=='Cancer immunology' "><a class="ui red label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="article.tag=='Cancer Epigenetics' "><a class="ui teal label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="article.tag=='CRISPR screens' "><a class="ui purple label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
+          <h4 class="ui center aligned header" v-if="article.tag=='Drug response and resistance' "><a class="ui blue label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
           <p>{{ article.content }}.<p>
           <div class="ui secondary  menu">
             <div class="left menu">
-              <a class="ui item">
-                <i class="like icon"></i>  Like
+              <a class="ui item" v-on:click='likeOrnot'>
+                <i class="{{ ownLike }} like icon"></i>  Like
               </a>
             </div>
 
@@ -59,12 +62,12 @@
 
           <!-- comment-->
           <div class="ui comments" >
-            <div class="comment" v-for="comment in comments">
+            <div class="comment" v-for="comment in upDatecomments" >
               <a class="avatar">
                 <img src="/images/avatar/small/joe.jpg">
               </a>
               <div class="content">
-                <a class="author">annonymous</a>
+                <a class="author">{{comment.username}}</a>
                 <div class="metadata">
                   <div class="date">{{comment.createDate}}</div>
                 </div>
@@ -75,9 +78,9 @@
             </div>
             <form class="ui reply form">
               <div class="field">
-                <textarea></textarea>
+                <textarea v-model='content'></textarea>
               </div>
-              <div class="ui primary submit labeled icon button">
+              <div class="ui primary submit labeled icon button" v-on:click='comment'>
                 <i class="icon edit"></i> Add Comment
               </div>
             </form>
@@ -98,13 +101,56 @@
       data:{
         article:[],
         comments:[],
+        ticket:[],
+        ownLike:'',
+        content:'',
       },
       methods:{
       get_userprofile_id : function(name){
             if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
             return decodeURIComponent(name[1]);
           },
-       getData:function(){
+      update : function(){
+          var self = this;
+          var id = this.get_userprofile_id('id')
+          var url = "/api/revdetail/" + String(id)
+          reqwest({
+            url:url,
+            method :'put',
+            type:'json',
+            headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+            success:function(resp){
+              self.ticket=resp;
+            },
+            error:function(error){
+            //  window.location = '/home/';
+            },
+
+          })
+      },
+      comment: function(){
+        var self = this;
+        var id = this.get_userprofile_id('id')
+          var url = "/api/revdetail/" + String(id)
+          reqwest({
+            url:url,
+            method :'post',
+            type:'json',
+            data : {
+            content : self.content,
+            },
+            headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+            success:function(resp){
+              self.comments = resp;
+              console.log(self.comments)
+            },
+            error:function(error){
+            //  window.location = '/home/';
+            },
+
+          })
+      },
+      getData:function(){
 
           var self = this;
           var id = this.get_userprofile_id('id')
@@ -118,6 +164,12 @@
               console.log(resp);
               self.article=resp.article;
               self.comments=resp.comment;
+              self.ticket=resp.ticket;
+              if(self.ticket.like){
+                  self.ownLike='red';
+                }else{
+                  self.ownLike='';
+                };
               console.log(self.comments);
             },
             error:function(error){
@@ -143,10 +195,25 @@
       writeSummary : function(){
         window.location = '/editing/';
       },
+      likeOrnot : function(){
+        var self=this;
+        self.ticket.like = !self.ticket.like;
+        self.update();
+        if(self.ticket.like){
+          self.ownLike='red';
+        }else{
+          self.ownLike='';
+        }
+      },
 
       },
 
       computed:{
+        upDatecomments:function(){
+          var self = this;
+          var newComments = self.comments;
+          return newComments;
+        }
       },
 
       ready:function(){
