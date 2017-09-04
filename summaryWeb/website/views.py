@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from website.models import *
 from django.contrib.auth.decorators import login_required
-from faker import Factory
+#from faker import Factory
 # Create your views here.
 def homePage(request):
 	#user1 = User.objects.create_user(username='jingxin',password='fujingxin')
