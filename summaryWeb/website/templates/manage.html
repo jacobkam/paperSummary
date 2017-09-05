@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Paper Summary Log In</title>
+    <link rel="stylesheet" href="{% static 'css/semantic.css' %}">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+    <script src="{% static 'js/vue1.js' %}"></script>
+    <script src="{% static 'js/reqwest.js' %}"></script>
+    <script src="{% static 'js/js.cookie.js' %}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
+
+  </head>
+  <style type="text/css">
+
+    .unscrollable{
+                height:100%;
+                overflow:hidden;
+            }
+    .ui.padded.modal.active {
+                transform: translate(0, -50%);
+            }
+  </style>
+<!-- tags for Django avoiding to take '{}' as variable-->
+{% verbatim %}
+<body  id="app" class="dimmable {{ canScroll }}">
+  <div class="ui top blue fixed menu" >
+    <div class="item">
+      <h1 style="color:teal;">Paper Summary</h1>
+    </div>
+    <a class="active item" v-on:click='backHome'>
+    Home
+    </a>
+    <a v-on:click='getAllSummary' class="item" >
+    All Summary
+    </a>
+    <a class="item" v-on:click='getReview'>
+    Peer Review
+    </a>
+    <a class="item" v-on:click='writeSummary'>
+     <i class='edit icon'> </i>Write Summary
+    </a>
+    <div class="right menu" v-on:click="logout" >
+    <a class="ui item" >
+      Logout
+    </a>
+    </div>
+</div>
+
+
+
+<div class="ui center aligned basic segment" style="margin-top: 100px;">
+  <div class="ui error message" v-show="errorPassword !='' ">
+      <h4 class="ui centered aligned header">{{ errorPassword }}</h4>
+  </div>
+  <div class="ui action input">
+    <input type="text" v-model='newUsername' placeholder="New Username">
+    <div class="ui blue button" type='submit' v-on:click='createUser'>Create User</div>
+  </div>
+</div>
+<div class='ui grid' style="margin-left: 10px;">
+  <!-- unsubmit -->
+
+  <div class="six wide column">
+
+   <div class='ui center aligned segment' style="opacity: 0.9;margin-left:20px;">
+      <!-- items -->
+        <h3 class='ui centered aligned header'>Users Who Do Not Submit Summary Last Week</h3>
+        <br>
+        <div class="ui list" v-for="person in notSubmit">
+          <div class="item">
+            <img class="ui avatar image" :src="person.profile_image_url">
+            <div class="content">
+              <h4 class="header">{{ person.nick_name}}</h4>
+              <div class="description">
+                <i class="ui yellow like  icon"></i>{{person.like_count}}
+                <i class="ui blue comment icon"></i>{{person.comment_count}}
+              </div>
+            </div>
+          </div>
+
+        </div>
+    </div>
+  </div>
+<!-- like rank -->
+  <div class="five wide column">
+   <div class='ui center aligned segment' style="opacity: 0.9;margin-left:20px;">
+      <!-- items -->
+        <h3 class='ui centered aligned header'>Users Ranked By Number Of Likes They Received</h3>
+        <br>
+        <div class="ui list" v-for="person in likeRank">
+          <div class="item">
+            <img class="ui avatar image" :src="person.profile_image_url">
+            <div class="content">
+              <h4 class="header">{{ person.nick_name}}</h4>
+              <div class="description">
+                <i class="ui yellow like icon"></i>{{person.like_count}}
+                <i class="ui comment icon"></i>{{person.comment_count}}
+              </div>
+            </div>
+          </div>
+
+        </div>
+    </div>
+  </div>
+
+  <!-- comment rank -->
+    <div class="five wide column">
+     <div class='ui center aligned segment' style="opacity: 0.9;margin-left:20px;">
+        <!-- items -->
+        <h3 class='ui centered aligned header'>Users Ranked By Number Of Comments They Submit</h3>
+        <br>
+          <div class="ui list" v-for="person in commentRank">
+            <div class="item">
+              <img class="ui avatar image" :src="person.profile_image_url">
+              <div class="content">
+                <h4 class="header">{{ person.nick_name}}</h4>
+                <div class="description">
+                  <i class="ui like icon"></i>{{person.like_count}}
+                  <i class="ui blue comment icon"></i>{{person.comment_count}}
+                </div>
+              </div>
+            </div>
+
+          </div>
+      </div>
+    </div>
+
+
+
+
+  </div>
+  <div class='ui basic center aligned segment' style="margin-top: 200px;background-color:#A9D0F5;opacity:0.9;">
+   <p style="color:white;">© 2017   JingxinFu.<br>Contact: jacobxin24@gmail.com </br></p>
+  </div>
+
+  <script>
+  vm = new Vue({
+      el:"#app",
+      data:{
+        show:false,
+        likeRank:[],
+        commentRank:[],
+        notSubmit:[],
+        errorPassword:'',
+        newUsername:'',
+      },
+      methods:{
+        model_switch:function(){
+        this.show=!this.show;
+        },
+        getData:function(){
+          var self = this;
+          reqwest({
+            url:'/api/adminPage/',
+            type:'json',
+            headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+            success:function(resp){
+              //console.log(resp);
+              self.likeRank=resp.likeRank;
+              self.commentRank=resp.commentRank;
+              self.notSubmit=resp.unSubmit;
+              self.newUsername='';
+              //console.log(resp.userprofile);
+            },
+            error:function(error){
+              //window.location = '/home/';
+            },
+
+          })
+        },
+
+      logout : function () {
+        Cookies.remove('token');
+        window.location = '/home/';
+      },
+      getAllSummary : function(){
+        window.location = '/articleList/';
+      },
+      action_api : function(item_id){
+        window.location = "/detail/?id=" + String(item_id);
+      },
+      writeSummary : function(){
+        window.location = '/editing/';
+      },
+      getReview : function(){
+        window.location = '/review/';
+      },
+      backHome : function(){
+        window.location = '/article/';
+      },
+      createUser:function(){
+        if(this.newUsername.length>2){
+          var self = this;
+          reqwest({
+            url:'/api/adminPage/',
+            method:'post',
+            type:'json',
+            data:{
+              username:self.newUsername,
+            },
+            headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+            success:function(resp){
+              self.getData()
+            },
+            error:function(error){
+              self.errorPassword=error.msg;
+            },
+
+          })
+        }else{
+        this.errorPassword='Lenght of name is required to be large than two!'
+      };
+      },
+
+      },
+
+      computed:{
+        canScroll:function () {
+                        if (this.show) {
+                            return 'unscrollable'
+                        } else {
+                            return ''
+                        }
+                    },
+        fadeInOut:function () {
+                        if (this.show) {
+                            return ' fadeIn'
+                        } else {
+                            return ' fadeOut'
+                        }
+                    },
+      },
+
+      ready:function(){
+        this.getData();
+      },
+    })
+
+  </script>
+</body>
+
+
+{% endverbatim %}
+</html>

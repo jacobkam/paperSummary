@@ -29,7 +29,7 @@
     <div class="item">
       <h1 style="color:teal;">Paper Summary</h1>
     </div>
-    <a class="active item">
+    <a class="active item" v-on:click='backHome'>
     Home
     </a>
     <a v-on:click='getAllSummary' class="item" >
@@ -51,6 +51,9 @@
 
   <div class="ui dimmer animated {{ fadeInOut }} active" v-if='show' >
       <div class="ui padded modal segment active" >
+        <div class="ui active dimmer" v-if='fileLoad'>
+          <div class="ui huge text loader">Loading...</div>
+        </div>
         <a class="ui right red corner label" v-on:click="model_switch">
           <i class="delete icon"></i>
         </a>
@@ -75,13 +78,14 @@
       </div>
   </div>
 
+
 <!-- profile-->
-<div class='ui grid' style="margin-top: 40px;margin-left: 10px;">
+<div class='ui grid' style="margin-top: 60px;margin-left: 10px;">
 
   <div class="six wide column" >
     <div class="ui centered card" >
-      <div class="image" >
-        <img class="ui centered medium image" :src="profile.profile_image_url">
+      <div class="ui container" style="width:250px;height:250px;">
+        <img class="ui circular image" :src="profile.profile_image_url" >
       </div>
       <div class="content">
         <h3 class="ui center aligned header">{{ profile.nick_name }}</h3>
@@ -89,11 +93,16 @@
     </div>
   </div>
 
-  <div class="ten wide column" style="margin-top: 100px;">
+  <div class="ten wide column" style="margin-top: 60px;">
     <div class="ui center aligned basic segment">
+      <div class="ui instagram button" v-on:click='toManagePage' v-show='profile.is_admin' style="margin-bottom:20px;">
+        To Manage Page <i class="users icon"></i>
+      </div>
+      <br>
       <div class="ui error message" v-show="errorPassword !='' ">
           <h4 class="ui centered aligned header">{{ errorPassword }}</h4>
       </div>
+
       <div class="ui circular teal button" v-on:click='model_switch'>
         Change Profile Image
       </div>
@@ -118,7 +127,7 @@
             <h2 class="header">{{ profile.comment_count }}</h2>
           </div>
         </div>
-        
+
       </div>
     </div>
 
@@ -248,6 +257,7 @@
         imageError:'',
         inputIMG:'',
         test:'',
+        fileLoad:false,
       },
       methods:{
         model_switch:function(){
@@ -289,6 +299,9 @@
       getReview : function(){
         window.location = '/review/';
       },
+      backHome : function(){
+        window.location = '/article/';
+      },
       onFileChange(e) {
           var files = e.target.files || e.dataTransfer.files;
           if (!files.length)
@@ -320,6 +333,7 @@
         }else{
           this.errorPassword='';
           var self = this;
+
           reqwest({
             url:'/api/userPassword/',
             type:'json',
@@ -344,14 +358,14 @@
         }else{
           var self = this;
           var fd = new window.FormData();
-
+          self.fileLoad=true;
           fd.append("image",this.inputIMG);
           reqwest({
             url:'/api/userImage/',
             type:'json',
             method:'post',
             data:fd,
-            processData: false, 
+            processData: false,
             cache: false,
             contentType: false,
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
@@ -359,11 +373,14 @@
               window.location = '/article/'
             },
             error:function(error){
-              //window.location = '/home/';
+              this.imageError = 'Please choose a correct image file!';
             },
 
            });
-        }
+        };
+        },
+        toManagePage:function(){
+          window.location='/manage/'
         },
       },
 

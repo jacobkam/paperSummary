@@ -42,6 +42,7 @@
 
           <h5 class="ui center aligned header">
             <div class="sub header">PubDate: {{article.createDate}}</div>
+            <div class="sub header">Author: {{article.authorName}}</div>
           </h5>
           <h4 class="ui center aligned header" v-if="article.tag=='Cancer immunology' "><a class="ui red label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
           <h4 class="ui center aligned header" v-if="article.tag=='Cancer Epigenetics' "><a class="ui teal label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
@@ -62,7 +63,7 @@
             </div>
 
           </div>
-    
+
       <!-- comment-->
       <div class="ui comments" >
         <div class="comment" v-for="comment in upDatecomments" >

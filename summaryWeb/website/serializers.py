@@ -15,7 +15,7 @@ class ArticleSerializers(serializers.ModelSerializer):
         fields = '__all__'
 
 class UserSerializers(serializers.ModelSerializer):
-    username = serializers.CharField(min_length=6,max_length=20)
+    username = serializers.CharField(min_length=3,max_length=20)
     password = serializers.CharField(min_length=6,max_length=20)
 
     class Meta:

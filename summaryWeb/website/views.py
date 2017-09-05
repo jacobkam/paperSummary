@@ -60,3 +60,6 @@ def review(request):
 
 def reviewDetial(request):
 	return render(request,'reviewDetail.html',context={})
+
+def managePage(request):
+	return render(request,'manage.html',context={})

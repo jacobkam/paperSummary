@@ -9,7 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate,login
 import datetime
-from django.core.files.base import ContentFile 
+from django.core.files.base import ContentFile
 #from PIL import Image
 # for delete files
 import os
@@ -74,7 +74,12 @@ def article(request):
 	if request.method == 'GET':
 		if request.auth:
 			personalArticle = Article.objects.filter(belong_to_id=request.user.id)
-			userprofile = UserProfile.objects.get(belong_to_id=request.user.id)
+			try:
+				userprofile = UserProfile.objects.get(belong_to_id=request.user.id)
+			except:
+				userNow1= User.objects.get(id=request.user.id)
+				userprofile=UserProfile.objects.create(belong_to=userNow1,nick_name=userNow1.username,is_admin=userNow1.is_superuser)
+				userprofile.save()
 			userprofileQueryset = UserProfileSerializers(userprofile)
 			#print(Article.objects.filter(id__in=[1,2]))
 			try:
@@ -117,7 +122,7 @@ def allArticle(request):
             }
             return Response(body, status=status.HTTP_403_FORBIDDEN)
 
-            
+
 @api_view(['GET'])
 @authentication_classes((TokenAuthentication,))
 def reviewArticle(request):
@@ -157,7 +162,7 @@ def articleDetail(request,id):
             	ticket = ticket_new
             articleQueryset = ArticleSerializers(article,many=False)
             ticketQueryset = TicketSerializers(ticket,many=False)
-            
+
             body={
             'article':articleQueryset.data,
             'comment':commentQueryset,
@@ -177,8 +182,8 @@ def articleDetail(request,id):
 
     		article.vote += 1 if ticket.like else -1
     		article.save()
-    		
-    		article_own_userprofile.comment_count += 1 if ticket.like else -1
+
+    		article_own_userprofile.like_count += 1 if ticket.like else -1
     		article_own_userprofile.save()
     		ticketQueryset = TicketSerializers(ticket,many=False)
     		body={
@@ -234,7 +239,7 @@ def revDetail(request,id):
             	ticket = ticket_new
             articleQueryset = ArticleSerializers(article,many=False)
             ticketQueryset = TicketSerializers(ticket,many=False)
-            
+
             body={
             'article':articleQueryset.data,
             'comment':commentQueryset,
@@ -259,7 +264,7 @@ def revDetail(request,id):
     		article.vote += 1 if ticket.like else -1
     		article.save()
 
-    		article_own_userprofile.comment_count += 1 if ticket.like else -1
+    		article_own_userprofile.like_count += 1 if ticket.like else -1
     		article_own_userprofile.save()
 
     		ticketQueryset = TicketSerializers(ticket,many=False)
@@ -306,6 +311,7 @@ def editPage(request):
 			return Response(body,status=status.HTTP_200_OK)
 
 	elif request.method == 'POST':
+		authorTothisArticle = User.objects.get(id=request.user.id)
 		serializers = ArticleSerializers(data=request.data)
 		title = serializers.initial_data['title']
 		content = serializers.initial_data['content']
@@ -323,6 +329,8 @@ def editPage(request):
 			preArticle.belong_to=user
 			preArticle.is_saveToEdit=is_save
 			preArticle.tag=tag
+			preArticle.createDate=datetime.date.today()
+			preArticle.authorName=authorTothisArticle.username
 			preArticle.save()
 
 		except:
@@ -332,7 +340,10 @@ def editPage(request):
 				pubmedID=pubmedID,
 				belong_to=user,
 				is_saveToEdit=is_save,
-				tag=tag,)
+				tag=tag,
+				createDate=datetime.date.today(),
+				authorName=authorTothisArticle.username,
+				)
 			newArtcle.save()
 
 		body={
@@ -388,3 +399,55 @@ def imageAPI(request):
 	'msg':'Please provide a correct image file!'
 	}
 	return Response(body,status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+@authentication_classes((TokenAuthentication,))
+def adminPage(request):
+	theUser = User.objects.get(id=request.user.id)
+	if theUser.is_superuser:
+		if request.method == 'GET':
+			userAll = UserProfile.objects.all()
+			userLike = UserProfileSerializers(userAll.order_by('-like_count'),many=True).data
+			userComment = UserProfileSerializers(userAll.order_by('-comment_count'),many=True).data
+			# who do not upload summary
+			now = datetime.date.today()
+			thisMonday=now - datetime.timedelta(datetime.date.today().weekday())
+			lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
+			uploadArticle = Article.objects.filter(createDate__gte=lastMonday).filter(createDate__lt=thisMonday).filter(is_saveToEdit=False)
+			uploadUserID =list(uploadArticle.values_list('belong_to_id',flat=True).distinct())
+			try:
+				notSubmitUser = UserProfile.objects.exclude(belong_to_id__in=uploadUserID)
+				notSubmitUserQuerySet = UserProfileSerializers(notSubmitUser,many=True).data
+			except:
+				notSubmitUserQuerySet=''
+			body={
+			'likeRank':userLike,
+			'commentRank':userComment,
+			'unSubmit':notSubmitUserQuerySet,
+			}
+			return Response(body,status.HTTP_200_OK)
+
+		if request.method == 'POST':
+			serializers = UserSerializers(data=request.data)
+			username = serializers.initial_data['username']
+			try:
+				newUser = User.objects.create_user(username=username,password='12345678')
+				newUser.save()
+				newUser = User.objects.get(username=username)
+				newUserProfile = UserProfile.objects.create(nick_name=username,belong_to=newUser)
+				newUserProfile.save()
+				body={
+				'msg':'success!',
+				}
+				return Response(body,status=status.HTTP_200_OK)
+			except:
+				body={
+				'msg':'The user existed!'
+				}
+				return Response(body,status=status.HTTP_400_BAD_REQUEST)
+
+
+	body={
+	'msg':'you are not administer!'
+	}
+	return Response(body,status=status.HTTP_403_FORBIDDEN)

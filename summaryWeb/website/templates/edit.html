@@ -18,6 +18,14 @@
           margin-top: 0px;
         }
 
+      .unscrollable{
+                  height:100%;
+                  overflow:hidden;
+              }
+      .ui.padded.modal.active {
+                  transform: translate(0, -50%);
+              }
+
     </style>
   </head>
 <!-- tags for Django avoiding to take '{}' as variable-->
@@ -63,7 +71,7 @@
     </div>
   </div>
 
-  <div class="ui container segment inputs" style="margin-top: 100px;"">
+  <div class="ui container segment inputs" style="margin-top: 100px;">
     <div class="ui error message" v-if="pubIDvalidation !='' ">
         <p>{{ message }}</p>
     </div>
@@ -75,7 +83,7 @@
       </div>
 
       <div class="five wide column">
-        
+
         <input type="radio" id="Cancer immunology" value="Cancer immunology" v-model="tag">
         <label for="Cancer immunology" class="ui red horizontal label" style="margin-bottom: 10px;">Cancer immunology</label>
         <br>
@@ -88,13 +96,13 @@
         <label for="CRISPR screens" class="ui purple horizontal label" style="margin-bottom: 10px;">CRISPR screens</label>
         <br>
         <input type="radio" id="Drug response and resistance" value="Drug response and resistance" v-model="tag">
-        <label for="Drug response and resistance" class="ui blue horizontal label" style="margin-bottom: 10px;">Drug response and resistance</label> 
+        <label for="Drug response and resistance" class="ui blue horizontal label" style="margin-bottom: 10px;">Drug response and resistance</label>
       </div>
 
     </div>
-    
 
-    
+
+
 
 
     <form class="ui form">
@@ -195,7 +203,7 @@
       },
       saveOrSubmit : function(actions){
         var self = this;
-        if(self.pubIDvalidation ==''){
+        if(self.pubIDvalidation =='' && self.tag!=''){
           var url = "/api/editPage/";
           reqwest({
             url:url,
@@ -226,7 +234,13 @@
           this.show=true;
           this.Thecase=1;
           this.notice.header='Error';
-          this.notice.content=this.message;
+          if(self.tag=='' && self.pubIDvalidation ==''){
+            this.notice.content='Please choose a tag!';
+          }else if (self.tag !='' && self.pubIDvalidation !='') {
+            this.notice.content=this.message;
+          }else{
+            this.notice.content='Please choose a tag!\n \n'+this.message;
+          };
         };
       },
       preSubmit:function(){

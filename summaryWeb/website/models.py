@@ -25,6 +25,7 @@ class Article(models.Model):
     vote = models.IntegerField(default=0)
     commentCount = models.IntegerField(default=0)
     is_saveToEdit = models.BooleanField('save',default=False)
+    authorName = models.CharField('nickName',max_length=100, blank=True, null=True,unique=True)
 
     CHOOOSE = (
         ('Cancer immunology','Cancer immunology'),
