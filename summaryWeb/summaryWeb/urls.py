@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from website.views import homePage,articleReview,articleList,detail,editing,review,reviewDetial
-from website.api import login,article,allArticle,articleDetail,reviewArticle,revDetail,editPage
+from website.api import login,article,allArticle,articleDetail,reviewArticle,revDetail,editPage,passwordAPI,imageAPI
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -36,6 +36,9 @@ urlpatterns = [
     url(r'^api/allArticle/', allArticle),
     url(r'^api/review/', reviewArticle),
     url(r'^api/editPage/', editPage),#editing
+    url(r'^api/userPassword/', passwordAPI),#profile change
+    url(r'^api/userImage/', imageAPI),#image change
     url(r'^api/detail/(?P<id>\d+)',articleDetail),# get detail
     url(r'^api/revdetail/(?P<id>\d+)',revDetail),# get detail for review
+
 ]

@@ -133,4 +133,4 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR,'website','static')
 # set a path to store files uploaded by users
-MEDIA_ROOT = os.path.join(BASE_DIR, 'upload').replace("//", "/")
+MEDIA_ROOT = os.path.join(BASE_DIR,'website','static','upload').replace("//", "/")

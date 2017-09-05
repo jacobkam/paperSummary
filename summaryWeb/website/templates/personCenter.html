@@ -9,10 +9,22 @@
     <script src="{% static 'js/vue1.js' %}"></script>
     <script src="{% static 'js/reqwest.js' %}"></script>
     <script src="{% static 'js/js.cookie.js' %}"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
+
   </head>
+  <style type="text/css">
+
+    .unscrollable{
+                height:100%;
+                overflow:hidden;
+            }
+    .ui.padded.modal.active {
+                transform: translate(0, -50%);
+            }
+  </style>
 <!-- tags for Django avoiding to take '{}' as variable-->
 {% verbatim %}
-<body  id="app">
+<body  id="app" class="dimmable {{ canScroll }}">
   <div class="ui top blue fixed menu" >
     <div class="item">
       <h1 style="color:teal;">Paper Summary</h1>
@@ -37,16 +49,85 @@
 </div>
 
 
-<div class="ui very padded segment" style="margin-top: 40px;">
-  <div class="ui card" >
-    <div class="image">
-      <img src="{{ profile.profile_image_url }}">
-    </div>
-    <div class="content">
-      <h3 class="ui center aligned header">{{ profile.nick_name }}</h3>
+  <div class="ui dimmer animated {{ fadeInOut }} active" v-if='show' >
+      <div class="ui padded modal segment active" >
+        <a class="ui right red corner label" v-on:click="model_switch">
+          <i class="delete icon"></i>
+        </a>
+        <div v-if="!image" >
+          <h2 class="ui center aligned header" >Select an image</h2>
+          <div class="ui error message" v-show="imageError !='' ">
+            <h4 class="ui centered aligned header"> {{ imageError }} </h4>
+          </div>
+        </div>
+        <div v-else>
+          <img class="ui centered small image" :src="image" />
+        </div>
+
+        <div  class="ui center aligned basic segment"  >
+          <form  enctype="multipart/form-data">
+            <input name='image' type="file" @change="onFileChange">
+          </form>
+          <br>
+          <button class="ui blue button"  v-on:click="updateImage" type="submit">Change</button>
+        </div>
+
+      </div>
+  </div>
+
+<!-- profile-->
+<div class='ui grid' style="margin-top: 40px;margin-left: 10px;">
+
+  <div class="six wide column" >
+    <div class="ui centered card" >
+      <div class="image" >
+        <img class="ui centered medium image" :src="profile.profile_image_url">
+      </div>
+      <div class="content">
+        <h3 class="ui center aligned header">{{ profile.nick_name }}</h3>
+      </div>
     </div>
   </div>
+
+  <div class="ten wide column" style="margin-top: 100px;">
+    <div class="ui center aligned basic segment">
+      <div class="ui error message" v-show="errorPassword !='' ">
+          <h4 class="ui centered aligned header">{{ errorPassword }}</h4>
+      </div>
+      <div class="ui circular teal button" v-on:click='model_switch'>
+        Change Profile Image
+      </div>
+      <div class="ui action input">
+        <input type="text" v-model='newPassword' placeholder="New Password">
+        <div class="ui blue button" type='submit' v-on:click='changePassword'>Change Password</div>
+      </div>
+      <br>
+      <div class="ui very relaxed horizontal list" style="margin-top: 50px;">
+        <div class="item">
+          <h2> Received Likes</h2>
+          <i class="huge red like icon"></i>
+          <div class="content">
+            <h2 class="header">{{ profile.like_count }}</h2>
+          </div>
+        </div>
+
+        <div class="item">
+          <h2> Submit Comments</h2>
+          <i class="huge comment icon"></i>
+          <div class="content">
+            <h2 class="header">{{ profile.comment_count }}</h2>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+  </div>
+
+
+
 </div>
+
 <div class='ui grid'>
 <!-- favorite summary -->
     <div class="eight wide column">
@@ -81,12 +162,12 @@
                 </h4>
               </a>
               <div class="right menu">
-                <a class="ui item">
+                <h5 class="ui item">
                   <i class="like icon"></i> {{ artcs.vote }} Like
-                </a>
-                <a class="ui item">
+                </h5>
+                <h5 class="ui item">
                   <i class="comment icon"></i> {{ artcs.commentCount }} comment
-                </a>
+                </h5>
               </div>
 
             </div>
@@ -130,12 +211,12 @@
               </h4>
             </a>
             <div class="right menu">
-              <a class="ui item">
-                <i class="like icon"></i> {{ artcs.vote }} Like
-              </a>
-              <a class="ui item">
-                <i class="comment icon"></i> {{ artcs.commentCount }} comment
-              </a>
+              <h5 class="ui item">
+                  <i class="like icon"></i> {{ artcs.vote }} Like
+                </h5>
+                <h5 class="ui item">
+                  <i class="comment icon"></i> {{ artcs.commentCount }} comment
+              </h5>
             </div>
 
           </div>
@@ -160,20 +241,30 @@
         pArticle:[],
         fArticle:[],
         profile:[],
+        show:false,
+        image:'',
+        newPassword:'',
+        errorPassword:'',
+        imageError:'',
+        inputIMG:'',
+        test:'',
       },
       methods:{
-       getData:function(){
+        model_switch:function(){
+        this.show=!this.show;
+        },
+        getData:function(){
           var self = this;
           reqwest({
             url:'/api/article/',
             type:'json',
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
             success:function(resp){
-              console.log(resp);
+              //console.log(resp);
               self.fArticle=resp.favoriteArticle;
               self.pArticle=resp.personalArticle;
               self.profile=resp.userprofile;
-              console.log(resp.userprofile);
+              //console.log(resp.userprofile);
             },
             error:function(error){
               window.location = '/home/';
@@ -198,7 +289,82 @@
       getReview : function(){
         window.location = '/review/';
       },
+      onFileChange(e) {
+          var files = e.target.files || e.dataTransfer.files;
+          if (!files.length)
+            return;
+          this.createImage(files[0]);
+        },
+      createImage(file) {
+          var image = new Image();
+          var reader = new FileReader();
+          var vm = this;
+          var supportedTypes = ['image/jpg', 'image/jpeg', 'image/png'];
+          if(file && supportedTypes.indexOf(file.type) >=0){
+            reader.onload = (e) => {
+              vm.image = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            vm.inputIMG=file;
+          }else{
+            this.imageError='Only support format: jpg,jpeg, or png!';
+          }
+        },
+      removeImage: function (e) {
+          this.image = '';
+        },
 
+      changePassword : function(){
+        if(this.newPassword.length<6){
+          this.errorPassword ='Please submit a correct password!';
+        }else{
+          this.errorPassword='';
+          var self = this;
+          reqwest({
+            url:'/api/userPassword/',
+            type:'json',
+            method:'post',
+            data:{
+              password:self.newPassword,
+            },
+            headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+            success:function(resp){
+              window.location = '/home/';
+            },
+            error:function(error){
+              //window.location = '/home/';
+            },
+
+           });
+          }
+        },
+      updateImage : function(){
+        if(this.image == ''){
+          this.imageError = 'Please choose a correct image file!';
+        }else{
+          var self = this;
+          var fd = new window.FormData();
+
+          fd.append("image",this.inputIMG);
+          reqwest({
+            url:'/api/userImage/',
+            type:'json',
+            method:'post',
+            data:fd,
+            processData: false, 
+            cache: false,
+            contentType: false,
+            headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+            success:function(resp){
+              window.location = '/article/'
+            },
+            error:function(error){
+              //window.location = '/home/';
+            },
+
+           });
+        }
+        },
       },
 
       computed:{
@@ -227,13 +393,26 @@
           };
           return newList;
         },
+        canScroll:function () {
+                        if (this.show) {
+                            return 'unscrollable'
+                        } else {
+                            return ''
+                        }
+                    },
+        fadeInOut:function () {
+                        if (this.show) {
+                            return ' fadeIn'
+                        } else {
+                            return ' fadeOut'
+                        }
+                    },
       },
 
       ready:function(){
         this.getData();
       },
     })
-
 
   </script>
 </body>

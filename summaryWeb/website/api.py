@@ -9,7 +9,12 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate,login
 import datetime
-
+from django.core.files.base import ContentFile 
+from PIL import Image
+# for delete files
+import os
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 @api_view(['POST'])
 @csrf_exempt
@@ -168,8 +173,13 @@ def articleDetail(request,id):
     		ticket.save()
 
     		article = Article.objects.get(id=id)
+    		article_own_userprofile=UserProfile.objects.get(belong_to_id=article.belong_to_id)
+
     		article.vote += 1 if ticket.like else -1
     		article.save()
+    		
+    		article_own_userprofile.comment_count += 1 if ticket.like else -1
+    		article_own_userprofile.save()
     		ticketQueryset = TicketSerializers(ticket,many=False)
     		body={
     		'ticket':ticketQueryset.data,
@@ -192,6 +202,8 @@ def articleDetail(request,id):
    			newComment.save()
    			article.commentCount += 1
    			article.save()
+   			userprofile.comment_count += 1
+   			userprofile.save()
    			comments = Comment.objects.filter(article_id=id,user_id=request.user.id)
    			commentQueryset=CommentSerilizers(comments,many=True)
    			body={
@@ -242,8 +254,14 @@ def revDetail(request,id):
     		ticket.save()
 
     		article = Article.objects.get(id=id)
+    		article_own_userprofile=UserProfile.objects.get(belong_to_id=article.belong_to_id)
+
     		article.vote += 1 if ticket.like else -1
     		article.save()
+
+    		article_own_userprofile.comment_count += 1 if ticket.like else -1
+    		article_own_userprofile.save()
+
     		ticketQueryset = TicketSerializers(ticket,many=False)
     		return Response(ticketQueryset.data,status=status.HTTP_200_OK)
     	else:
@@ -262,6 +280,8 @@ def revDetail(request,id):
    			newComment.save()
    			article.commentCount += 1
    			article.save()
+   			userprofile.comment_count += 1
+   			userprofile.save()
    			comments = Comment.objects.filter(article_id=id,user_id=request.user.id)
    			commentQueryset=CommentSerilizers(comments,many=True)
    			return Response(commentQueryset.data,status=status.HTTP_200_OK)
@@ -326,4 +346,45 @@ def editPage(request):
 		}
 		return response(body,status=status.HTTP_403_FORBIDDEN)
 
+@api_view(['GET','POST'])
+@authentication_classes((TokenAuthentication,))
+def passwordAPI(request):
+	if request.method == 'POST':
+		if request.auth:
+			serializers = UserSerializers(data=request.data)
+			newPassword = serializers.initial_data['password']
+			userNow = User.objects.get(id=request.user.id)
+			userNow.set_password(newPassword)
+			userNow.save()
+			body={
+			'msg':'change success!'
+			}
+			return Response(body,status=status.HTTP_200_OK)
 
+@api_view(['GET','POST'])
+@authentication_classes((TokenAuthentication,))
+def imageAPI(request):
+	if request.method == 'POST':
+			if request.auth:
+				imageProile= request.FILES['image']
+				decodeIMG = ContentFile(imageProile.read())
+				userNow = UserProfile.objects.get(belong_to_id=request.user.id)
+
+				newFileName =userNow.nick_name + '.'+ imageProile.name.split('.')[-1]
+				absolotePath = os.path.join(BASE_DIR,'website','static','upload','avatar',newFileName).replace("//", "/")
+				print(absolotePath)
+				if os.path.isfile(absolotePath):
+					os.remove(absolotePath)
+				userNow.profile_image.save(newFileName,content=decodeIMG)
+				newImgURL = '/static/upload/avatar/'+userNow.nick_name + '.'+imageProile.name.split('.')[-1]
+				userNow.profile_image_url = newImgURL
+				userNow.save()
+				Comment.objects.filter(user_id=request.user.id).update(profile_image=newImgURL)
+				body={
+				'msg':'change success!'
+				}
+				return Response(body,status=status.HTTP_200_OK)
+	body={
+	'msg':'Please provide a correct image file!'
+	}
+	return Response(body,status=status.HTTP_400_BAD_REQUEST)

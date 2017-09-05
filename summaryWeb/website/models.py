@@ -6,11 +6,13 @@ from datetime import date
 
 class UserProfile(models.Model):
     belong_to = models.ForeignKey(to=User,related_name='userprofile')
-    profile_image = models.FileField(upload_to='avatar',null = True , blank= True , verbose_name='profile')
+    profile_image = models.ImageField(upload_to='avatar',null = True , blank= True , verbose_name='profile')
+    thumb = models.FilePathField(path = 'avatar/thumb',null = True)
     profile_image_url = models.CharField(max_length=250, default="/static/img/geek.jpg")
     nick_name = models.CharField('nickName',max_length=100, blank=True, null=True,unique=True)
     is_admin = models.BooleanField('admin',default=False)
-
+    like_count = models.IntegerField(default=0)
+    comment_count = models.IntegerField(default=0)
     def __str__(self):
         return self.nick_name
 
@@ -37,7 +39,7 @@ class Article(models.Model):
 class Comment(models.Model):
     article = models.ForeignKey(to=Article,related_name='comment')
     username =models.CharField('username',max_length=100, blank=True, null=True)
-    profile_image = models.CharField(max_length=250,default="static/img/geek.jpg")
+    profile_image = models.CharField(max_length=250,default="/static/img/geek.jpg")
     user = models.ForeignKey(to=User,related_name='comment')
     content=models.TextField(default=None)
     createDate = models.DateField(default=date.today)
