@@ -10,7 +10,7 @@ from rest_framework.authentication import TokenAuthentication
 from django.contrib.auth import authenticate,login
 import datetime
 from django.core.files.base import ContentFile 
-from PIL import Image
+#from PIL import Image
 # for delete files
 import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
