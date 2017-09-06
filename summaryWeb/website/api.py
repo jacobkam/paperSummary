@@ -458,8 +458,6 @@ def adminPage(request):
 				delelteUser = User.objects.get(username=username)
 				try:
 					Article.objects.filter(belong_to_id=delelteUser.id).delete()
-					Ticket.objects.filter(voter_id=delelteUser.id).delete()
-					Comment.objects.filter(user_id=delelteUser.id).delete()
 					UserProfile.objects.filter(belong_to_id=delelteUser.id).delete()
 				except:
 					pass
