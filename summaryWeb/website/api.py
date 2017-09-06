@@ -73,7 +73,10 @@ def article(request):
 	# print(request.user.id)
 	if request.method == 'GET':
 		if request.auth:
-			personalArticle = Article.objects.filter(belong_to_id=request.user.id)
+			now = datetime.date.today()
+			lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
+			article = Article.objects.filter(createDate__lte=lastMonday).order_by('-createDate')
+			personalArticle = article.filter(belong_to_id=request.user.id)
 			try:
 				userprofile = UserProfile.objects.get(belong_to_id=request.user.id)
 			except:
@@ -86,7 +89,7 @@ def article(request):
 				user_like = Ticket.objects.filter(voter_id=request.user.id,like=True)
 				user_like_article_id = list(map(lambda x: x['article_id'],list(user_like.values('article_id').distinct())))
 				print(user_like_article_id)
-				favoriteArticle = Article.objects.filter(id__in=user_like_article_id)
+				favoriteArticle = article(id__in=user_like_article_id)
 				favoriteArticleQueryset=ArticleSerializers(favoriteArticle, many=True).data
 			except:
 				favoriteArticleQueryset=''
@@ -113,7 +116,7 @@ def allArticle(request):
         if request.auth:
         	now = datetime.date.today()
         	lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
-        	article = Article.objects.filter(createDate__gte=lastMonday).order_by('-vote')
+        	article = Article.objects.filter(createDate__lte=lastMonday).order_by('-vote')
         	articleQueryset = ArticleSerializers(article,many=True)
         	return Response(articleQueryset.data,status=status.HTTP_200_OK)
         else:
@@ -400,7 +403,7 @@ def imageAPI(request):
 	}
 	return Response(body,status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET','POST'])
+@api_view(['GET','POST','PUT'])
 @authentication_classes((TokenAuthentication,))
 def adminPage(request):
 	theUser = User.objects.get(id=request.user.id)
@@ -442,9 +445,36 @@ def adminPage(request):
 				return Response(body,status=status.HTTP_200_OK)
 			except:
 				body={
-				'msg':'The user existed!'
+				'msg':'The user existed!',
 				}
+				print(body)
 				return Response(body,status=status.HTTP_400_BAD_REQUEST)
+
+		if request.method == 'PUT':
+			serializers = UserSerializers(data=request.data)
+			username = serializers.initial_data['username']
+			print(username)
+			try:
+				delelteUser = User.objects.get(username=username)
+				try:
+					Article.objects.filter(belong_to_id=delelteUser.id).delete()
+					Ticket.objects.filter(voter_id=delelteUser.id).delete()
+					Comment.objects.filter(user_id=delelteUser.id).delete()
+					UserProfile.objects.filter(belong_to_id=delelteUser.id).delete()
+				except:
+					pass
+				delelteUser.delete()
+				body={
+				'msg':'success!'
+				}
+				return Response(body,status=status.HTTP_200_OK)
+			except:
+				body={
+				'msg':'The user does not exist!'
+				}
+				print(body)
+				return Response(body,status=status.HTTP_400_BAD_REQUEST)
+
 
 
 	body={

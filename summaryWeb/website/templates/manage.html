@@ -11,7 +11,25 @@
     <script src="{% static 'js/js.cookie.js' %}"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css" />
 
+    <style media="screen">
+      .ui.container.segment.inputs {
+          padding: 70px;
+          font-family: SimHei;
+          margin-top: 0px;
+        }
+
+      .unscrollable{
+                  height:100%;
+                  overflow:hidden;
+              }
+      .ui.padded.modal.active {
+                  transform: translate(0, -50%);
+              }
+
+    </style>
+
   </head>
+
   <style type="text/css">
 
     .unscrollable{
@@ -48,15 +66,45 @@
     </div>
 </div>
 
+<div class="ui dimmer animated {{ fadeInOut }} active" v-if='show'>
+    <div class="ui padded modal segment active" >
+      <div class="ui active dimmer" v-if='fileLoad'>
+        <div class="ui huge text loader">Deleting...</div>
+      </div>
+      <a class="ui right red corner label" v-on:click="model_switch">
+      <i class="delete icon"></i>
+      </a>
+      <h3 class="ui center aligned header">{{notice.header}}</h3>
+      <div class="content" style="color:grey">
+        <p>{{notice.content}}</p>
+      </div>
+      <div class="ui center aligned basic segment" >
+        <button class="ui blue button"  v-on:click="delelteU" type="submit">Confirm</button>
+      </div>
+  </div>
+</div>
 
 
 <div class="ui center aligned basic segment" style="margin-top: 100px;">
-  <div class="ui error message" v-show="errorPassword !='' ">
-      <h4 class="ui centered aligned header">{{ errorPassword }}</h4>
-  </div>
+
   <div class="ui action input">
-    <input type="text" v-model='newUsername' placeholder="New Username">
-    <div class="ui blue button" type='submit' v-on:click='createUser'>Create User</div>
+    <div class="ui vertical segment">
+      <input type="text" v-model='newUsername' placeholder="New Username">
+      <div class="ui blue button" type='submit' v-on:click='createUser'>Create User</div>
+      <div class="ui error message" v-show="errorPassword !='' ">
+          <h4 class="ui centered aligned header">{{ errorPassword }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <div class="ui action input" style="margin-left:20px;">
+    <div class="ui vertical segment">
+      <input type="text" v-model='deleteUsername' placeholder="Username">
+      <div class="ui red button" type='submit' v-on:click='preDelete'>Delete User</div>
+      <div class="ui error message" v-show="deleteError !='' ">
+          <h4 class="ui centered aligned header">{{ deleteError }}</h4>
+      </div>
+    </div>
   </div>
 </div>
 <div class='ui grid' style="margin-left: 10px;">
@@ -145,6 +193,13 @@
         notSubmit:[],
         errorPassword:'',
         newUsername:'',
+        deleteUsername:'',
+        deleteError:'',
+        fileLoad:false,
+        notice:{
+          header:'',
+          content:'',
+        }
       },
       methods:{
         model_switch:function(){
@@ -205,7 +260,8 @@
               self.getData()
             },
             error:function(error){
-              self.errorPassword=error.msg;
+              var error_resp = JSON.parse(error.response)
+              self.errorPassword=error_resp.msg;
             },
 
           })
@@ -213,7 +269,40 @@
         this.errorPassword='Lenght of name is required to be large than two!'
       };
       },
+      preDelete:function(){
+        if(this.deleteUsername.length>2){
+          this.notice.header='Notification';
+          this.notice.content='Please make sure you want to Delete '+this.deleteUsername +'!';
+          this.model_switch();
+        }else {
+          this.deleteError='Lenght of name is required to be large than two!'
+        }
+      },
+      delelteU:function(){
+        var self = this;
+        self.fileLoad=true;
+        reqwest({
+          url:'/api/adminPage/',
+          method:'put',
+          type:'json',
+          data:{
+            username:self.deleteUsername,
+          },
+          headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
+          success:function(resp){
+            self.fileLoad=false;
+            self.getData();
+            self.show=false;
+          },
+          error:function(error){
+            self.fileLoad=false;
+            var error_resp = JSON.parse(error.response)
+            self.notice.header='Error';
+            self.notice.content=error_resp.msg;
+          },
 
+        })
+      }
       },
 
       computed:{
