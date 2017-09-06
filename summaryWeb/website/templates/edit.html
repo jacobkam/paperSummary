@@ -107,16 +107,21 @@
 
     <form class="ui form">
       <input type="text" v-model='title' value='{{title}}' placeholder="Title" style="margin-bottom:10px;">
-      <input type="text" v-model='content' value='{{content}}' placeholder="Content" style="height:500px;">
+      <div class="ui form">
+        <div class="field">
+          <textarea  v-model='content' value='{{content}}' placeholder="Content" style="height:500px;""></textarea>
+        </div>
+      </div>
     </form>
+    
 
     <div class="ui secondary  menu">
 
       <div class="left menu">
-      <button class="ui {{ ActiveOrDisabled }} button"  v-on:click="saveOrSubmit('True')" type="submit">Save</button>
+      <button class="ui teal button"  v-on:click="saveOrSubmit('True')" type="submit">Save</button>
       </div>
       <div class="right menu">
-        <button class="ui {{ ActiveOrDisabled }} button"  v-on:click="preSubmit" type="submit">Submit</button>
+        <button class="ui blue button"  v-on:click="preSubmit" type="submit">Submit</button>
       </div>
 
     </div>
@@ -278,6 +283,7 @@
                             return ' fadeOut'
                         }
                     },
+
       },
 
       ready:function(){
