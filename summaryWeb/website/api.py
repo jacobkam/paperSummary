@@ -116,7 +116,7 @@ def allArticle(request):
         if request.auth:
         	now = datetime.date.today()
         	lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
-        	article = Article.objects.filter(createDate__lte=lastMonday).order_by('-vote')
+        	article = Article.objects.filter(createDate__lte=lastMonday).filter(is_saveToEdit=False).order_by('-vote')
         	articleQueryset = ArticleSerializers(article,many=True)
         	return Response(articleQueryset.data,status=status.HTTP_200_OK)
         else:
@@ -134,7 +134,7 @@ def reviewArticle(request):
 	    	# compute date
 	    	now = datetime.date.today()
 	    	lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
-	    	article = Article.objects.filter(createDate__gte=lastMonday).order_by('-createDate')
+	    	article = Article.objects.filter(createDate__gte=lastMonday).filter(is_saveToEdit=False).order_by('-createDate')
 	    	articleQueryset = ArticleSerializers(article,many=True)
 	    	return Response(articleQueryset.data,status=status.HTTP_200_OK)
 	    else:
