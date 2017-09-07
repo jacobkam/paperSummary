@@ -144,7 +144,7 @@
        <a class="ui blue ribbon label">Favorite</a>
         <div class="ui search" style="padding-top:10px;">
           <div class="ui icon input">
-            <input class="prompt" type="text" v-model='bestArticle' placeholder="Search Your Favorite Summary title" style="width: 300px;">
+            <input class="prompt" type="text" v-model='bestArticle' placeholder="Search Your Favorite Summary" style="width: 300px;">
             <i class="search icon"></i>
           </div>
         </div>
@@ -157,10 +157,12 @@
               <div class="sub header">PubDate: {{artcs.createDate}}</div>
             </h5>
 
-            <a class="ui red label" v-if="artcs.tag=='Cancer immunology' " style="margin-bottom: 5px;">{{artcs.tag}}</a>
-            <a class="ui teal label" v-if="artcs.tag=='Cancer Epigenetics' " style="margin-bottom: 5px;">{{artcs.tag}}</a>
-            <a class="ui purple label" v-if="artcs.tag=='CRISPR screens' " style="margin-bottom: 5px;">{{artcs.tag}}</a>
-            <a class="ui blue label" v-if="artcs.tag=='Drug response and resistance' " style="margin-bottom: 5px;">{{artcs.tag}}</a>
+            <h4 class="ui center aligned header">
+            <a class="ui red label"  v-if="artcs.tag.includes('Cancer immunology') " style="margin-bottom: 5px;">Cancer immunology</a>
+            <a class="ui teal label" v-if="artcs.tag.includes('Cancer Epigenetics') " style="margin-bottom: 5px;">Cancer Epigenetics</a>
+            <a class="ui purple label" v-if="artcs.tag.includes('CRISPR screens') " style="margin-bottom: 5px;">CRISPR screens</a>
+            <a class="ui blue label"  v-if="artcs.tag.includes('Drug response and resistance')" style="margin-bottom: 5px;">Drug response and resistance</a>
+          </h4>
 
             <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
             <p>{{ artcs.content|limitBy 300 }}<br> ......<p>
@@ -195,7 +197,7 @@
         <a class="ui teal right ribbon label">Personal</a>
         <div class="ui search" style="padding-top:10px;">
           <div class="ui icon input">
-            <input class="prompt" type="text" v-model='personalArticle' placeholder="Search Your Personal Summary title" style="width: 300px;">
+            <input class="prompt" type="text" v-model='personalArticle' placeholder="Search Your Personal Summary" style="width: 300px;">
             <i class="search icon"></i>
           </div>
         </div>
@@ -206,10 +208,12 @@
           <h5 class="ui center aligned header">
             <div class="sub header">PubDate: {{artcs.createDate}}</div>
           </h5>
-            <a class="ui red label" v-if="artcs.tag=='Cancer immunology' " style="margin-bottom: 5px;">{{artcs.tag}}</a>
-            <a class="ui teal label" v-if="artcs.tag=='Cancer Epigenetics' " style="margin-bottom: 5px;">{{artcs.tag}}</a>
-            <a class="ui purple label" v-if="artcs.tag=='CRISPR screens' " style="margin-bottom: 5px;">{{artcs.tag}}</a>
-            <a class="ui blue label" v-if="artcs.tag=='Drug response and resistance' " style="margin-bottom: 5px;">{{artcs.tag}}</a>
+            <h4 class="ui center aligned header">
+            <a class="ui red label"  v-if="artcs.tag.includes('Cancer immunology') " style="margin-bottom: 5px;">Cancer immunology</a>
+            <a class="ui teal label" v-if="artcs.tag.includes('Cancer Epigenetics') " style="margin-bottom: 5px;">Cancer Epigenetics</a>
+            <a class="ui purple label" v-if="artcs.tag.includes('CRISPR screens') " style="margin-bottom: 5px;">CRISPR screens</a>
+            <a class="ui blue label"  v-if="artcs.tag.includes('Drug response and resistance')" style="margin-bottom: 5px;">Drug response and resistance</a>
+          </h4>
 
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
           <p>{{ artcs.content|limitBy 300 }}<br> ......<p>
@@ -388,9 +392,9 @@
         personal:function(){
           var self=this;
           function titleSearch(result) {
-                    return result.title == self.personalArticle;
+                    return result.title.includes(self.personalArticle) || result.content.includes(self.personalArticle); 
                 };
-          if(self.personalArticle != ''){
+          if(self.personalArticle != '' && self.pArticle != ''){
             var newList = self.pArticle.filter(titleSearch);
           }else{
             var newList = self.pArticle;
@@ -401,9 +405,9 @@
         favorite:function(){
           var self=this;
           function titleSearch(result) {
-                    return result.title == self.bestArticle;
+                    return result.title.includes(self.bestArticle) || result.content.includes(self.bestArticle);
                 };
-          if(self.bestArticle != ''){
+          if(self.bestArticle != '' && self.fArticle != ''){
             var newList = self.fArticle.filter(titleSearch);
           }else{
             var newList = self.fArticle;

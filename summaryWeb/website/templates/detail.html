@@ -41,14 +41,16 @@
           <h3 class="ui center aligned header">{{ article.title }}</h3>
 
           <h5 class="ui center aligned header">
-            <a href={{artcs.pubmedIDurl}}>PubMed ID: {{artcs.pubmedID}}</a>
+            <a href={{article.pubmedIDurl}}>PubMed ID: {{article.pubmedID}}</a>
             <div class="sub header">PubDate: {{article.createDate}}</div>
             <div class="sub header">Author: {{article.authorName}}</div>
           </h5>
-          <h4 class="ui center aligned header" v-if="article.tag=='Cancer immunology' "><a class="ui red label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
-          <h4 class="ui center aligned header" v-if="article.tag=='Cancer Epigenetics' "><a class="ui teal label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
-          <h4 class="ui center aligned header" v-if="article.tag=='CRISPR screens' "><a class="ui purple label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
-          <h4 class="ui center aligned header" v-if="article.tag=='Drug response and resistance' "><a class="ui blue label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
+          <h4 class="ui center aligned header">
+            <a class="ui red label"  v-if="article.tag.includes('Cancer immunology') " style="margin-bottom: 5px;">Cancer immunology</a>
+            <a class="ui teal label" v-if="article.tag.includes('Cancer Epigenetics') " style="margin-bottom: 5px;">Cancer Epigenetics</a>
+            <a class="ui purple label" v-if="article.tag.includes('CRISPR screens') " style="margin-bottom: 5px;">CRISPR screens</a>
+            <a class="ui blue label"  v-if="article.tag.includes('Drug response and resistance')" style="margin-bottom: 5px;">Drug response and resistance</a>
+          </h4>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
           <p>{{ article.content }}.<p>
           <div class="ui secondary  menu">
@@ -101,7 +103,8 @@
   vm = new Vue({
       el:"#app",
       data:{
-        article:[],
+        article:{
+          tag:''},
         comments:[],
         ticket:[],
         ownLike:'',

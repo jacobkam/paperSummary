@@ -87,17 +87,19 @@ def article(request):
 			#print(Article.objects.filter(id__in=[1,2]))
 			try:
 				user_like = Ticket.objects.filter(voter_id=request.user.id,like=True)
-				user_like_article_id = list(map(lambda x: x['article_id'],list(user_like.values('article_id').distinct())))
+				user_like_article_id = list(user_like.values_list('article_id',flat=True).distinct())
 				print(user_like_article_id)
-				favoriteArticle = article(id__in=user_like_article_id)
+				favoriteArticle = article.filter(id__in=user_like_article_id)
 				favoriteArticleQueryset=ArticleSerializers(favoriteArticle, many=True).data
+
 			except:
 				favoriteArticleQueryset=''
 
-			personalArticleQueryset = ArticleSerializers(personalArticle, many=True)
+			personalArticleQueryset = ArticleSerializers(personalArticle, many=True).data
+			
 
 			body={
-				'personalArticle':personalArticleQueryset.data,
+				'personalArticle':personalArticleQueryset,
 				'favoriteArticle':favoriteArticleQueryset,
 				'userprofile':userprofileQueryset.data,
 			}
@@ -117,8 +119,8 @@ def allArticle(request):
         	now = datetime.date.today()
         	lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
         	article = Article.objects.filter(createDate__lte=lastMonday).filter(is_saveToEdit=False).order_by('-vote')
-        	articleQueryset = ArticleSerializers(article,many=True)
-        	return Response(articleQueryset.data,status=status.HTTP_200_OK)
+        	articleQueryset = ArticleSerializers(article,many=True).data
+        	return Response(articleQueryset,status=status.HTTP_200_OK)
         else:
             body = {
             'msg':'Sorry,Please login first',
@@ -135,8 +137,8 @@ def reviewArticle(request):
 	    	now = datetime.date.today()
 	    	lastMonday = now - datetime.timedelta(datetime.date.today().weekday()+7)
 	    	article = Article.objects.filter(createDate__gte=lastMonday).filter(is_saveToEdit=False).order_by('-createDate')
-	    	articleQueryset = ArticleSerializers(article,many=True)
-	    	return Response(articleQueryset.data,status=status.HTTP_200_OK)
+	    	articleQueryset = ArticleSerializers(article,many=True).data
+	    	return Response(articleQueryset,status=status.HTTP_200_OK)
 	    else:
 	        body = {
 	        'msg':'Sorry,Please login first',
@@ -165,11 +167,11 @@ def articleDetail(request,id):
             	ticket_new = Ticket(article=article,voter=userNow)
             	ticket_new.save()
             	ticket = ticket_new
-            articleQueryset = ArticleSerializers(article,many=False)
+            articleQueryset = ArticleSerializers(article,many=False).data
             ticketQueryset = TicketSerializers(ticket,many=False)
 
             body={
-            'article':articleQueryset.data,
+            'article':articleQueryset,
             'comment':commentQueryset,
             'ticket':ticketQueryset.data,
             }
@@ -244,11 +246,11 @@ def revDetail(request,id):
             	ticket_new = Ticket(article=article,voter=userNow)
             	ticket_new.save()
             	ticket = ticket_new
-            articleQueryset = ArticleSerializers(article,many=False)
+            articleQueryset = ArticleSerializers(article,many=False).data
             ticketQueryset = TicketSerializers(ticket,many=False)
 
             body={
-            'article':articleQueryset.data,
+            'article':articleQueryset,
             'comment':commentQueryset,
             'ticket':ticketQueryset.data,
             }
@@ -309,6 +311,7 @@ def editPage(request):
 			try:
 				article = Article.objects.get(belong_to_id=request.user.id,is_saveToEdit=True)
 				articleQueryset=ArticleSerializers(article,many=False).data
+				articleQueryset['tag']=articleQueryset['tag'].split('-')
 			except:
 				articleQueryset=''
 			body={
@@ -325,7 +328,8 @@ def editPage(request):
 		pubmedID = serializers.initial_data['pubmedID']
 		user = User.objects.get(id=request.user.id)
 		is_save = serializers.initial_data['save']
-		tag = serializers.initial_data['tag']
+		tag = '-'.join(dict(request.data)['tag[]'])
+
 		try:
 			# make sure save article are unique
 			preArticle = Article.objects.get(belong_to_id=request.user.id,is_saveToEdit=True)

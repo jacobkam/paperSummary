@@ -10,6 +10,7 @@ from django.contrib.postgres.fields import ArrayField
 
 #     def __str__(self):  # __unicode__ on Python 2
 #         return self.name
+
 class UserProfile(models.Model):
     belong_to = models.ForeignKey(to=User,related_name='userprofile')
     profile_image = models.ImageField(upload_to='avatar',null = True , blank= True , verbose_name='profile')
