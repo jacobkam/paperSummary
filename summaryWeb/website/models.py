@@ -1,9 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 from datetime import date
+from django.contrib.postgres.fields import ArrayField
 #from faker import Factory
 # Create your models here.
+# class Post(models.Model):
+#     name = models.CharField(max_length=200)
+#     tags = ArrayField(models.CharField(max_length=200), blank=True)
 
+#     def __str__(self):  # __unicode__ on Python 2
+#         return self.name
 class UserProfile(models.Model):
     belong_to = models.ForeignKey(to=User,related_name='userprofile')
     profile_image = models.ImageField(upload_to='avatar',null = True , blank= True , verbose_name='profile')
@@ -20,6 +26,7 @@ class Article(models.Model):
     title = models.CharField(null=False,max_length=50)
     createDate = models.DateField(default=date.today)
     pubmedID=models.CharField(null=False,max_length=20)
+    pubmedIDurl=models.CharField(null=False,max_length=20,default='https://www.ncbi.nlm.nih.gov/pubmed/')
     content = models.TextField()
     belong_to = models.ForeignKey(to=User,related_name='Article')
     vote = models.IntegerField(default=0)
