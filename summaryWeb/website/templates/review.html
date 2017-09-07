@@ -147,7 +147,7 @@
           this.tag=[];
         }
       },
-      
+
       },
 
       computed:{
@@ -157,10 +157,10 @@
         function tagFilter(result) {
                     for(ids in self.tag){
                       if(!(result.tag.includes(self.tag[ids]))){
-                        return false;
+                        return true;
                       };
                     };
-                    return true;
+                    return false;
                 };
         if(self.tag.length>0){
           newArticle = self.Allarticle.filter(tagFilter);
