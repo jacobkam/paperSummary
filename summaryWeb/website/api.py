@@ -150,6 +150,8 @@ def articleDetail(request,id):
     if request.method == 'GET':
         if request.auth:
             article = Article.objects.get(id=id)
+            article.pubmedIDurl='https://www.ncbi.nlm.nih.gov/pubmed/'+article.pubmedID
+            article.save()
             #Ticket.objects.all().delete()
             try:
             	comment = Comment.objects.filter(article_id=id)
@@ -227,6 +229,8 @@ def revDetail(request,id):
     if request.method == 'GET':
         if request.auth:
             article = Article.objects.get(id=id)
+            article.pubmedIDurl='https://www.ncbi.nlm.nih.gov/pubmed/'+article.pubmedID
+            article.save()
             #Ticket.objects.all().delete()
             try:
             	comment = Comment.objects.filter(article_id=id,user_id=request.user.id)

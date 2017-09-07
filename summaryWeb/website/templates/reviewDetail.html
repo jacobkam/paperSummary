@@ -42,6 +42,7 @@
           <h3 class="ui center aligned header">{{ article.title }}</h3>
 
           <h5 class="ui center aligned header">
+            <a href={{article.pubmedIDurl}}>PubMed ID: {{article.pubmedID}}</a>
             <div class="sub header">PubDate: {{article.createDate}}</div>
           </h5>
            <h4 class="ui center aligned header" v-if="article.tag=='Cancer immunology' "><a class="ui red label" style="margin-bottom: 5px;">{{article.tag}}</a></h4>
