@@ -19,7 +19,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 @api_view(['POST'])
 @csrf_exempt
 def login(request):
-
 	serializers = UserSerializers(data=request.data)
 	if serializers.is_valid():
 		username = serializers.initial_data['username']
