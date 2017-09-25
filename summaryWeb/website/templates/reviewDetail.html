@@ -39,7 +39,7 @@
 <!-- all summary -->
   <div class='ui very padded segment' style="opacity: 0.9;padding-right: 250px;padding-left: 250px;margin-top: 50px;">
       <!-- items -->
-          <h3 class="ui center aligned header">{{ article.title }}</h3>
+          <h2 class="ui center aligned header">{{ article.title }}</h3>
 
           <h5 class="ui center aligned header">
             <a href={{article.pubmedIDurl}}>PubMed ID: {{article.pubmedID}}</a>
@@ -52,7 +52,7 @@
             <a class="ui blue label"  v-if="article.tag.includes('Drug response and resistance')" style="margin-bottom: 5px;">Drug response and resistance</a>
           </h4>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
-          <p>{{ article.content }}.<p>
+          <p style="font-size: 16px;">{{ article.content }}<p>
           <div class="ui secondary  menu">
             <div class="left menu">
               <a class="ui item" v-on:click='likeOrnot'>

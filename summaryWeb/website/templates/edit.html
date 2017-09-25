@@ -232,7 +232,11 @@
               }
             },
             error:function(error){
-            //  window.location = '/home/';
+              var error_resp = JSON.parse(error.response);
+              self.show=true;
+              self.Thecase=1
+              self.notice.header='Notification';
+              self.notice.content=error_resp.msg;
             },
 
           });

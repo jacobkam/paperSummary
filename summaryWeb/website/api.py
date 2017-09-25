@@ -20,6 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 @csrf_exempt
 def login(request):
 	serializers = UserSerializers(data=request.data)
+	#Article.objects.get(id=71).delete()
 	if serializers.is_valid():
 		username = serializers.initial_data['username']
 		password = serializers.initial_data['password']
@@ -328,6 +329,13 @@ def editPage(request):
 		user = User.objects.get(id=request.user.id)
 		is_save = serializers.initial_data['save']
 		tag = '-'.join(dict(request.data)['tag[]'])
+		is_pubId_exist = Article.objects.filter(pubmedID=pubmedID)
+		nameList = list(is_pubId_exist.values_list('authorName',flat=True).distinct())
+		if len(is_pubId_exist) > 1 or len(nameList) > 1 or authorTothisArticle.username not in nameList and len(nameList)==1:
+			body={
+			'msg':'Paper has been read before!'
+			}
+			return Response(body,status=status.HTTP_403_FORBIDDEN)
 
 		try:
 			# make sure save article are unique
