@@ -52,7 +52,7 @@
             <a class="ui blue label"  v-if="article.tag.includes('Drug response and resistance')" style="margin-bottom: 5px;">Drug response and resistance</a>
           </h4>
           <!-- <img class="ui small left floated image" :src="artcs.url_image" style='height:100px;width:100px;' >-->
-          <p style="font-size: 16px;">{{ article.content }}<p>
+          <p style="font-size: 16px;">{{{ article.content }}}<p>
           <div class="ui secondary  menu">
             <div class="right menu">
               <div class="left menu">
@@ -100,6 +100,9 @@
   </div>
 
   <script>
+  String.prototype.replaceAll  = function(s1,s2){     
+      return this.replace(new RegExp(s1,"gm"),s2);     
+  };   
   vm = new Vue({
       el:"#app",
       data:{
@@ -119,15 +122,16 @@
 
           var self = this;
           var id = this.get_userprofile_id('id')
-          console.log(id)
+          //console.log(id)
           var url = "/api/detail/" + String(id)
           reqwest({
             url:url,
             type:'json',
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
             success:function(resp){
-              console.log(resp);
+              //console.log(resp);
               self.article=resp.article;
+              self.article.content=self.article.content.replaceAll("\n","<br/>");
               self.comments=resp.comment;
               self.ticket=resp.ticket;
               if(self.ticket.like){
@@ -169,7 +173,7 @@
             type:'json',
             headers:Cookies.get('token')? {'Authorization': 'Token ' + Cookies.get('token')}:{},
             success:function(resp){
-              console.log(resp)
+              //console.log(resp)
               self.ticket=resp.ticket;
               self.article.vote=resp.vote;
             },
@@ -194,7 +198,7 @@
             success:function(resp){
               self.comments = resp.comment;
               self.article.commentCount=resp.commentCount;
-              console.log(self.comments)
+              //console.log(self.comments)
             },
             error:function(error){
             //  window.location = '/home/';
