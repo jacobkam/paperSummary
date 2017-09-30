@@ -331,7 +331,7 @@ def editPage(request):
 		tag = '-'.join(dict(request.data)['tag[]'])
 		is_pubId_exist = Article.objects.filter(pubmedID=pubmedID)
 		nameList = list(is_pubId_exist.values_list('authorName',flat=True).distinct())
-		if len(is_pubId_exist) > 1 or len(nameList) > 1 or authorTothisArticle.username not in nameList and len(nameList)==1:
+		if len(is_pubId_exist) > 1 or len(nameList) > 1 or (authorTothisArticle.username not in nameList and len(nameList)==1):
 			body={
 			'msg':'Paper has been read before!'
 			}
